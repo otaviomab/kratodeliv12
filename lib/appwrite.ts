@@ -118,4 +118,4 @@ export const listDocuments = async (
     console.error('Erro ao listar documentos:', error);
     throw error;
   }
-}; 
+};
