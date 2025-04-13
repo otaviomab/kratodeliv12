@@ -27,12 +27,12 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background">
-      <div className="flex items-center justify-between h-16 px-4 md:px-6">
-        <div className="flex items-center">
+    <header className="z-10 border-b bg-background">
+      <div className="flex items-center justify-between h-16">
+        <div className="flex items-center px-6">
           <button
             type="button"
-            className="md:hidden -ml-1 mr-2 flex h-10 w-10 items-center justify-center rounded-md text-foreground hover:bg-muted"
+            className="md:hidden -ml-2 mr-2 flex h-10 w-10 items-center justify-center rounded-md text-foreground hover:bg-muted"
             onClick={onToggleSidebar}
           >
             <Menu className="h-6 w-6" />
@@ -41,7 +41,7 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           <h1 className="text-xl font-semibold">{getPageTitle()}</h1>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 px-6">
           <ThemeToggle />
           
           <button 

@@ -404,4 +404,217 @@ Contexto React para gerenciar o estado global de autenticação, preparado para 
      - Preparado para integração com Appwrite Auth no futuro
      - Tratamento de erros de autenticação
 
-**Observação**: O sistema de autenticação está estruturado mas não está funcional, pois depende de integração com backend real (Appwrite). Ele serve como base para implementação futura. 
+**Observação**: O sistema de autenticação está estruturado mas não está funcional, pois depende de integração com backend real (Appwrite). Ele serve como base para implementação futura.
+
+## Autenticação
+
+### Sistema de Rotas e Layouts {#autenticacao-rotas}
+
+**Propósito**: Gerenciar a estrutura de rotas e layouts para páginas de autenticação e administrativas.
+
+**Implementação**:
+- Criação de dois grupos de rotas:
+  - `(auth)`: Para páginas de autenticação sem sidebar
+  - `(dashboard)`: Para páginas administrativas com sidebar
+- Layouts específicos para cada grupo em:
+  - `/app/admin/(auth)/layout.tsx`
+  - `/app/admin/(dashboard)/layout.tsx`
+
+**Exemplo**:
+```tsx
+// app/admin/(auth)/layout.tsx
+export default function AuthLayout({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background">
+      {children}
+    </div>
+  );
+}
+```
+
+### Páginas de Autenticação
+O sistema possui três páginas principais para autenticação, todas seguindo o mesmo padrão visual moderno:
+
+#### Login (`/admin/login`)
+**Propósito**: Permite que usuários existentes acessem o sistema administrativo.
+
+**Implementação**:
+- Utiliza componentes do shadcn/ui para consistência visual
+- Campos:
+  - Email (obrigatório)
+  - Senha (obrigatório)
+  - Checkbox "Lembrar de mim"
+- Links para:
+  - Recuperação de senha
+  - Criação de nova conta
+- Estilização:
+  - Cor principal: #fe5f02 (laranja)
+  - Gradiente suave no background
+  - Card com sombra e sem borda
+  - Feedback visual nos estados de hover e loading
+
+#### Cadastro (`/admin/cadastrar`)
+**Propósito**: Permite que novos estabelecimentos criem uma conta no sistema.
+
+**Implementação**:
+- Utiliza componentes do shadcn/ui
+- Campos:
+  - Nome do estabelecimento (obrigatório)
+  - WhatsApp (obrigatório)
+    - Formatação automática: (XX) XXXXX-XXXX
+    - Validação para 11 dígitos (DDD + 9 dígitos)
+  - Email (obrigatório)
+  - Senha (obrigatório)
+  - Confirmar senha (obrigatório)
+  - Checkbox de aceite dos termos (obrigatório)
+- Links para:
+  - Termos de Serviço
+  - Política de Privacidade
+  - Página de login
+- Mesma estilização da página de login
+
+#### Recuperação de Senha (`/admin/recuperar-senha`)
+**Propósito**: Permite que usuários redefinam suas senhas através do email.
+
+**Implementação**:
+- Utiliza componentes do shadcn/ui
+- Estados:
+  1. Formulário inicial:
+     - Campo de email (obrigatório)
+     - Botão de envio
+  2. Confirmação de envio:
+     - Ícone de sucesso animado
+     - Mensagens informativas
+     - Link para verificar spam
+- Link para retornar ao login
+- Mesma estilização das outras páginas
+
+### Componentes Compartilhados
+Todas as páginas de autenticação compartilham:
+- Logo do sistema (ícone Store)
+- Título com efeito de gradiente
+- Card com sombra
+- Inputs estilizados
+- Botões com estados de loading
+- Links com transições suaves
+- Feedback visual consistente
+
+### Temas
+O sistema suporta dois temas:
+
+**Tema Claro**:
+- Background: #FFFFFF
+- Texto: #171717
+- Elementos secundários: #F5F5F5
+
+**Tema Escuro**:
+- Background: #1C1C1C (cinza grafite)
+- Cards: #2A2A2A
+- Elementos secundários: #323232
+- Bordas: #404040
+
+A cor principal (#fe5f02) é mantida em ambos os temas para consistência da marca.
+
+### Responsividade
+Todas as páginas são totalmente responsivas:
+- Layout centralizado
+- Margens adaptativas
+- Largura máxima de 400px para formulários
+- Espaçamento otimizado para mobile
+- Inputs e botões com tamanho adequado para touch
+
+## Estrutura do Projeto
+
+### Organização de Diretórios {#estrutura-diretorios}
+
+**Propósito**: Manter o código organizado e facilitar a manutenção.
+
+**Implementação**:
+```
+/app/admin/
+├── (auth)/
+│   ├── login/
+│   ├── cadastrar/
+│   ├── recuperar-senha/
+│   └── layout.tsx
+├── (dashboard)/
+│   ├── dashboard/
+│   ├── menu/
+│   ├── orders/
+│   ├── planos/
+│   ├── reports/
+│   ├── settings/
+│   └── layout.tsx
+└── layout.tsx
+```
+
+### Grupos de Rotas {#estrutura-grupos-rotas}
+
+**Propósito**: Separar logicamente diferentes áreas da aplicação e seus layouts.
+
+**Implementação**:
+- Grupo `(auth)`:
+  - URLs públicas: `/admin/login`, `/admin/cadastrar`, `/admin/recuperar-senha`
+  - Layout simples sem sidebar
+  - Foco em autenticação e registro
+- Grupo `(dashboard)`:
+  - URLs protegidas: `/admin/dashboard`, `/admin/menu`, etc.
+  - Layout completo com sidebar
+  - Acesso apenas para usuários autenticados
+
+**Exemplo de URL**:
+- URL pública: `example.com/admin/login`
+- URL interna: `/app/admin/(auth)/login/page.tsx` 
+
+### Cardápio (Menu)
+
+**Propósito**: Gerenciar as categorias de produtos do cardápio do restaurante.
+
+**Implementação**: 
+- Página implementada com React e TypeScript
+- Interface moderna com Tailwind CSS
+- Gerenciamento de estado local com React Hooks (useState, useEffect)
+- Sistema de notificações com Sonner
+
+**Funcionalidades**:
+
+1. **Listagem de Categorias**
+   - Exibição em formato de tabela com colunas para nome, descrição, quantidade de produtos e status
+   - Indicador visual de status (ativo/inativo) com badges coloridos
+   - Hover effect nas linhas da tabela
+
+2. **Ações por Categoria**
+   - Botão "Desativar/Ativar": Fundo âmbar (bg-amber-100) com texto âmbar escuro
+   - Botão "Ver produtos": Fundo com cor primária em 10% de opacidade
+   - Botão "Excluir": Fundo vermelho claro (bg-red-100) com texto vermelho escuro
+   - Todos os botões possuem:
+     - Padding vertical (py-1.5) e horizontal (px-3)
+     - Bordas arredondadas (rounded-md)
+     - Efeito hover com transição suave
+     - Alto contraste para melhor legibilidade
+
+3. **Busca e Filtragem**
+   - Campo de busca com ícone
+   - Filtragem em tempo real por nome e descrição
+   - Contador de categorias encontradas
+
+4. **Gerenciamento de Categorias**
+   - Modal para adicionar nova categoria
+   - Modal de confirmação para exclusão
+   - Feedback visual com toast notifications
+   - Botão de atualização com animação de loading
+
+**Temas**:
+- Suporte a tema claro e escuro
+- Cores consistentes com a identidade visual
+- Backgrounds e borders adaptáveis ao tema
+
+**Responsividade**:
+- Layout adaptável para diferentes tamanhos de tela
+- Cabeçalho responsivo com quebra de linha em telas menores
+- Tabela com scroll horizontal em dispositivos móveis
+
+**Estados de Loading**:
+- Spinner animado durante carregamento inicial
+- Feedback visual durante operações assíncronas
+- Desabilitação de botões durante operações

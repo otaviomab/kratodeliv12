@@ -4,6 +4,33 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Clock, DollarSign, MapPin, Globe, Save } from "lucide-react";
 
+interface PaymentMethodsState {
+  onlinePaymentEnabled: boolean;
+  delivery: {
+    credit: boolean;
+    debit: boolean;
+    cash: boolean;
+    pix: boolean;
+    meal_voucher: boolean;
+    food_voucher: boolean;
+  };
+  online: {
+    credit: boolean;
+    debit: boolean;
+    pix: boolean;
+    meal_voucher: boolean;
+    food_voucher: boolean;
+  };
+}
+
+interface DeliveryZone {
+  id: string;
+  minDistance: number;
+  maxDistance: number;
+  fee: number;
+  deliveryTime: number; // tempo em minutos
+}
+
 export default function SettingsPage() {
   // Estados para os formulários
   const [generalInfo, setGeneralInfo] = useState({
@@ -40,18 +67,32 @@ export default function SettingsPage() {
     deliveryEnabled: true,
     pickupEnabled: true,
     minimumOrderValue: "20",
-    deliveryFee: "5",
-    freeDeliveryOver: "50",
     deliveryTimeMinutes: "45",
-    deliveryRadius: "5"
+    maxDeliveryRadius: "10",
+    zones: [
+      { id: "1", minDistance: 0, maxDistance: 2, fee: 0, deliveryTime: 30 },
+      { id: "2", minDistance: 2, maxDistance: 5, fee: 5, deliveryTime: 45 },
+      { id: "3", minDistance: 5, maxDistance: 10, fee: 8, deliveryTime: 60 }
+    ] as DeliveryZone[]
   });
 
-  const [paymentMethods, setPaymentMethods] = useState({
-    credit: true,
-    debit: true,
-    cash: true,
-    pix: true,
-    pixKey: "12345678900"
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsState>({
+    onlinePaymentEnabled: true,
+    delivery: {
+      credit: true,
+      debit: true,
+      cash: true,
+      pix: true,
+      meal_voucher: true,
+      food_voucher: true,
+    },
+    online: {
+      credit: true,
+      debit: true,
+      pix: true,
+      meal_voucher: true,
+      food_voucher: true,
+    }
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,12 +126,64 @@ export default function SettingsPage() {
     });
   };
 
+  const handleZoneChange = (zoneId: string, field: keyof DeliveryZone, value: number) => {
+    setDeliverySettings({
+      ...deliverySettings,
+      zones: deliverySettings.zones.map(zone =>
+        zone.id === zoneId ? { ...zone, [field]: value } : zone
+      )
+    });
+  };
+
+  const addDeliveryZone = () => {
+    const newId = String(deliverySettings.zones.length + 1);
+    const lastZone = deliverySettings.zones[deliverySettings.zones.length - 1];
+    const newMinDistance = lastZone ? lastZone.maxDistance : 0;
+    
+    setDeliverySettings({
+      ...deliverySettings,
+      zones: [
+        ...deliverySettings.zones,
+        {
+          id: newId,
+          minDistance: newMinDistance,
+          maxDistance: newMinDistance + 2,
+          fee: 0,
+          deliveryTime: 30
+        }
+      ]
+    });
+  };
+
+  const removeDeliveryZone = (zoneId: string) => {
+    setDeliverySettings({
+      ...deliverySettings,
+      zones: deliverySettings.zones.filter(zone => zone.id !== zoneId)
+    });
+  };
+
   const handlePaymentMethodsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked, type, value } = e.target;
-    setPaymentMethods({
-      ...paymentMethods,
-      [name]: type === "checkbox" ? checked : value
-    });
+
+    if (name === "onlinePaymentEnabled") {
+      setPaymentMethods({
+        ...paymentMethods,
+        onlinePaymentEnabled: checked
+      });
+      return;
+    }
+
+    // Lidar com métodos de pagamento na entrega e online
+    const [paymentType, method] = name.split('.');
+    if (paymentType === 'delivery' || paymentType === 'online') {
+      setPaymentMethods({
+        ...paymentMethods,
+        [paymentType]: {
+          ...paymentMethods[paymentType],
+          [method]: type === "checkbox" ? checked : value
+        }
+      });
+    }
   };
 
   // Função para salvar as configurações
@@ -489,46 +582,48 @@ export default function SettingsPage() {
           <h2 className="text-xl font-semibold">Configurações de Entrega</h2>
         </div>
         
-        <form onSubmit={(e) => handleSubmit(e, "entrega")} className="space-y-4">
+        <form onSubmit={(e) => handleSubmit(e, "entrega")} className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="deliveryEnabled"
+                name="deliveryEnabled"
+                checked={deliverySettings.deliveryEnabled}
+                onChange={handleDeliverySettingsChange}
+                className="rounded"
+              />
+              <label htmlFor="deliveryEnabled" className="text-sm font-medium">
+                Habilitar entrega
+              </label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="pickupEnabled"
+                name="pickupEnabled"
+                checked={deliverySettings.pickupEnabled}
+                onChange={handleDeliverySettingsChange}
+                className="rounded"
+              />
+              <label htmlFor="pickupEnabled" className="text-sm font-medium">
+                Habilitar retirada no local
+              </label>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="deliveryEnabled"
-                  name="deliveryEnabled"
-                  checked={deliverySettings.deliveryEnabled}
-                  onChange={handleDeliverySettingsChange}
-                  className="rounded"
-                />
-                <label htmlFor="deliveryEnabled" className="text-sm font-medium">
-                  Habilitar entrega
-                </label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="pickupEnabled"
-                  name="pickupEnabled"
-                  checked={deliverySettings.pickupEnabled}
-                  onChange={handleDeliverySettingsChange}
-                  className="rounded"
-                />
-                <label htmlFor="pickupEnabled" className="text-sm font-medium">
-                  Habilitar retirada no local
-                </label>
-              </div>
-              
               <div>
-                <label htmlFor="deliveryRadius" className="block text-sm font-medium mb-1">
-                  Raio de Entrega (km)
+                <label htmlFor="maxDeliveryRadius" className="block text-sm font-medium mb-1">
+                  Raio máximo de entrega (km)
                 </label>
                 <input
                   type="number"
-                  id="deliveryRadius"
-                  name="deliveryRadius"
-                  value={deliverySettings.deliveryRadius}
+                  id="maxDeliveryRadius"
+                  name="maxDeliveryRadius"
+                  value={deliverySettings.maxDeliveryRadius}
                   onChange={handleDeliverySettingsChange}
                   className="w-full px-3 py-2 border rounded-md"
                 />
@@ -547,9 +642,7 @@ export default function SettingsPage() {
                   className="w-full px-3 py-2 border rounded-md"
                 />
               </div>
-            </div>
-            
-            <div className="space-y-4">
+
               <div>
                 <label htmlFor="minimumOrderValue" className="block text-sm font-medium mb-1">
                   Valor mínimo do pedido (R$)
@@ -564,35 +657,91 @@ export default function SettingsPage() {
                   className="w-full px-3 py-2 border rounded-md"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="deliveryFee" className="block text-sm font-medium mb-1">
-                  Taxa de entrega (R$)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  id="deliveryFee"
-                  name="deliveryFee"
-                  value={deliverySettings.deliveryFee}
-                  onChange={handleDeliverySettingsChange}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium">Zonas de Entrega</h3>
+                <button
+                  type="button"
+                  onClick={addDeliveryZone}
+                  className="text-sm px-2 py-1 bg-primary text-primary-foreground rounded-md"
+                >
+                  Adicionar Zona
+                </button>
               </div>
-              
-              <div>
-                <label htmlFor="freeDeliveryOver" className="block text-sm font-medium mb-1">
-                  Entrega grátis acima de (R$)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  id="freeDeliveryOver"
-                  name="freeDeliveryOver"
-                  value={deliverySettings.freeDeliveryOver}
-                  onChange={handleDeliverySettingsChange}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
+
+              <div className="space-y-4">
+                {deliverySettings.zones.map((zone, index) => (
+                  <div key={zone.id} className="bg-muted/30 p-4 rounded-md relative">
+                    <div className="absolute top-2 right-2">
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => removeDeliveryZone(zone.id)}
+                          className="text-destructive hover:text-destructive/80"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Distância Min. (km)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={zone.minDistance}
+                          onChange={(e) => handleZoneChange(zone.id, 'minDistance', parseFloat(e.target.value))}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Distância Máx. (km)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={zone.maxDistance}
+                          onChange={(e) => handleZoneChange(zone.id, 'maxDistance', parseFloat(e.target.value))}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Taxa de Entrega (R$)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={zone.fee}
+                          onChange={(e) => handleZoneChange(zone.id, 'fee', parseFloat(e.target.value))}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      </div>
+
+                      <div className="col-span-3">
+                        <label className="block text-sm font-medium mb-1">
+                          Tempo de Entrega (minutos)
+                        </label>
+                        <input
+                          type="number"
+                          step="1"
+                          min="1"
+                          value={zone.deliveryTime}
+                          onChange={(e) => handleZoneChange(zone.id, 'deliveryTime', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -623,19 +772,36 @@ export default function SettingsPage() {
           <h2 className="text-xl font-semibold">Métodos de Pagamento</h2>
         </div>
         
-        <form onSubmit={(e) => handleSubmit(e, "métodos de pagamento")} className="space-y-4">
+        <form onSubmit={(e) => handleSubmit(e, "métodos de pagamento")} className="space-y-6">
+          {/* Ativar/Desativar Pagamento Online */}
+          <div className="flex items-center space-x-2 pb-4 border-b">
+            <input
+              type="checkbox"
+              id="onlinePaymentEnabled"
+              name="onlinePaymentEnabled"
+              checked={paymentMethods.onlinePaymentEnabled}
+              onChange={handlePaymentMethodsChange}
+              className="rounded"
+            />
+            <label htmlFor="onlinePaymentEnabled" className="text-sm font-medium">
+              Habilitar Pagamento Online
+            </label>
+          </div>
+
+          {/* Pagamento na Entrega */}
           <div className="space-y-4">
+            <h3 className="text-lg font-medium">Pagamento na Entrega</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="credit"
-                  name="credit"
-                  checked={paymentMethods.credit}
+                  id="delivery_credit"
+                  name="delivery.credit"
+                  checked={paymentMethods.delivery.credit}
                   onChange={handlePaymentMethodsChange}
                   className="rounded"
                 />
-                <label htmlFor="credit" className="text-sm font-medium">
+                <label htmlFor="delivery_credit" className="text-sm font-medium">
                   Cartão de Crédito
                 </label>
               </div>
@@ -643,13 +809,13 @@ export default function SettingsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="debit"
-                  name="debit"
-                  checked={paymentMethods.debit}
+                  id="delivery_debit"
+                  name="delivery.debit"
+                  checked={paymentMethods.delivery.debit}
                   onChange={handlePaymentMethodsChange}
                   className="rounded"
                 />
-                <label htmlFor="debit" className="text-sm font-medium">
+                <label htmlFor="delivery_debit" className="text-sm font-medium">
                   Cartão de Débito
                 </label>
               </div>
@@ -657,13 +823,13 @@ export default function SettingsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="cash"
-                  name="cash"
-                  checked={paymentMethods.cash}
+                  id="delivery_cash"
+                  name="delivery.cash"
+                  checked={paymentMethods.delivery.cash}
                   onChange={handlePaymentMethodsChange}
                   className="rounded"
                 />
-                <label htmlFor="cash" className="text-sm font-medium">
+                <label htmlFor="delivery_cash" className="text-sm font-medium">
                   Dinheiro
                 </label>
               </div>
@@ -671,35 +837,125 @@ export default function SettingsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="pix"
-                  name="pix"
-                  checked={paymentMethods.pix}
+                  id="delivery_pix"
+                  name="delivery.pix"
+                  checked={paymentMethods.delivery.pix}
                   onChange={handlePaymentMethodsChange}
                   className="rounded"
                 />
-                <label htmlFor="pix" className="text-sm font-medium">
+                <label htmlFor="delivery_pix" className="text-sm font-medium">
                   PIX
                 </label>
               </div>
-            </div>
-            
-            {paymentMethods.pix && (
-              <div>
-                <label htmlFor="pixKey" className="block text-sm font-medium mb-1">
-                  Chave PIX
-                </label>
+
+              <div className="flex items-center space-x-2">
                 <input
-                  type="text"
-                  id="pixKey"
-                  name="pixKey"
-                  value={paymentMethods.pixKey}
+                  type="checkbox"
+                  id="delivery_meal_voucher"
+                  name="delivery.meal_voucher"
+                  checked={paymentMethods.delivery.meal_voucher}
                   onChange={handlePaymentMethodsChange}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="rounded"
                 />
+                <label htmlFor="delivery_meal_voucher" className="text-sm font-medium">
+                  Vale Refeição
+                </label>
               </div>
-            )}
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="delivery_food_voucher"
+                  name="delivery.food_voucher"
+                  checked={paymentMethods.delivery.food_voucher}
+                  onChange={handlePaymentMethodsChange}
+                  className="rounded"
+                />
+                <label htmlFor="delivery_food_voucher" className="text-sm font-medium">
+                  Vale Alimentação
+                </label>
+              </div>
+            </div>
           </div>
-          
+
+          {/* Pagamento Online */}
+          {paymentMethods.onlinePaymentEnabled && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Pagamento Online</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="online_credit"
+                    name="online.credit"
+                    checked={paymentMethods.online.credit}
+                    onChange={handlePaymentMethodsChange}
+                    className="rounded"
+                  />
+                  <label htmlFor="online_credit" className="text-sm font-medium">
+                    Cartão de Crédito
+                  </label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="online_debit"
+                    name="online.debit"
+                    checked={paymentMethods.online.debit}
+                    onChange={handlePaymentMethodsChange}
+                    className="rounded"
+                  />
+                  <label htmlFor="online_debit" className="text-sm font-medium">
+                    Cartão de Débito
+                  </label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="online_pix"
+                    name="online.pix"
+                    checked={paymentMethods.online.pix}
+                    onChange={handlePaymentMethodsChange}
+                    className="rounded"
+                  />
+                  <label htmlFor="online_pix" className="text-sm font-medium">
+                    PIX
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="online_meal_voucher"
+                    name="online.meal_voucher"
+                    checked={paymentMethods.online.meal_voucher}
+                    onChange={handlePaymentMethodsChange}
+                    className="rounded"
+                  />
+                  <label htmlFor="online_meal_voucher" className="text-sm font-medium">
+                    Vale Refeição
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="online_food_voucher"
+                    name="online.food_voucher"
+                    checked={paymentMethods.online.food_voucher}
+                    onChange={handlePaymentMethodsChange}
+                    className="rounded"
+                  />
+                  <label htmlFor="online_food_voucher" className="text-sm font-medium">
+                    Vale Alimentação
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+            
           <div className="flex justify-end pt-4">
             <button
               type="submit"

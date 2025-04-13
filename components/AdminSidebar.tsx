@@ -59,14 +59,14 @@ export default function AdminSidebar() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="p-6 border-b">
+      <div className="h-16 px-6 flex items-center border-b">
         <div className="flex items-center space-x-2">
           <Store className="h-6 w-6 text-primary" />
           <span className="text-lg font-semibold">Krato Admin</span>
         </div>
       </div>
       
-      <nav className="flex-1 py-6 px-4 space-y-1">
+      <nav className="flex-1 py-6 px-6 space-y-1">
         {sidebarItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           
@@ -88,7 +88,7 @@ export default function AdminSidebar() {
         })}
       </nav>
       
-      <div className="p-4 mt-auto border-t">
+      <div className="px-6 py-4 mt-auto border-t">
         <button className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-colors">
           <LogOut className="h-5 w-5" />
           Sair

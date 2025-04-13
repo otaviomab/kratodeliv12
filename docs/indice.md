@@ -61,4 +61,55 @@
 
 ## Navegação
 - [Estrutura de Rotas](documentacao.md#estrutura-rotas)
-- [Navegação Dinâmica](documentacao.md#navegacao-dinamica) 
+- [Navegação Dinâmica](documentacao.md#navegacao-dinamica)
+
+## Atualizações e Mudanças
+- [Atualização para Tailwind CSS v4 (Janeiro/2024)](./atualizacoes/2024-01-tailwind-v4.md)
+
+## Autenticação
+- [Visão Geral da Autenticação](mdc:#autenticacao)
+- [Página de Login](mdc:#login)
+- [Página de Cadastro](mdc:#cadastro)
+- [Página de Recuperação de Senha](mdc:#recuperacao-senha)
+- [Componentes Compartilhados](mdc:#componentes-auth)
+- [Temas](mdc:#temas-auth)
+- [Responsividade](mdc:#responsividade-auth)
+
+## Cardápio
+- [Visão Geral do Cardápio](mdc:#cardapio)
+- [Listagem de Categorias](mdc:#listagem-categorias)
+- [Ações por Categoria](mdc:#acoes-categoria)
+- [Busca e Filtragem](mdc:#busca-filtragem)
+- [Gerenciamento de Categorias](mdc:#gerenciamento-categorias)
+- [Temas](mdc:#temas-cardapio)
+- [Responsividade](mdc:#responsividade-cardapio)
+- [Estados de Loading](mdc:#loading-cardapio)
+
+## Estrutura do Projeto
+- [Organização de Diretórios](mdc:#estrutura-diretorios)
+- [Grupos de Rotas](mdc:#estrutura-grupos-rotas)
+- [Componentes](mdc:#estrutura-componentes)
+- [Utilitários](mdc:#estrutura-utils)
+- [Tipos](mdc:#estrutura-tipos)
+
+## Funcionalidades
+- [Dashboard](mdc:#dashboard)
+- [Cardápio](mdc:#cardapio)
+- [Pedidos](mdc:#pedidos)
+- [Clientes](mdc:#clientes)
+- [Configurações](mdc:#configuracoes)
+
+## Temas e Estilos
+- [Cores](mdc:#cores)
+- [Tipografia](mdc:#tipografia)
+- [Componentes UI](mdc:#componentes-ui)
+- [Responsividade](mdc:#responsividade)
+
+## APIs e Integrações
+- [Appwrite](mdc:#appwrite)
+- [Serviços Externos](mdc:#servicos-externos)
+
+## Deployment
+- [Ambiente de Desenvolvimento](mdc:#ambiente-dev)
+- [Ambiente de Produção](mdc:#ambiente-prod)
+- [CI/CD](mdc:#ci-cd)

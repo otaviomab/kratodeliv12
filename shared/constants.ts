@@ -23,10 +23,18 @@ export const ORDER_STATUS = [
 
 // Métodos de pagamento
 export const PAYMENT_METHODS = [
-  { id: 'cash', label: 'Dinheiro' },
-  { id: 'credit_card', label: 'Cartão de crédito' },
-  { id: 'debit_card', label: 'Cartão de débito' },
-  { id: 'pix', label: 'PIX' },
+  { id: 'cash', label: 'Dinheiro', type: 'delivery' },
+  { id: 'credit_card', label: 'Cartão de crédito', type: 'both' },
+  { id: 'debit_card', label: 'Cartão de débito', type: 'both' },
+  { id: 'pix', label: 'PIX', type: 'both' },
+  { id: 'meal_voucher', label: 'Vale Refeição', type: 'both' },
+  { id: 'food_voucher', label: 'Vale Alimentação', type: 'both' }
+];
+
+// Tipos de pagamento
+export const PAYMENT_TYPES = [
+  { id: 'delivery', label: 'Pagamento na Entrega' },
+  { id: 'online', label: 'Pagamento Online' }
 ];
 
 // Tipos de entrega

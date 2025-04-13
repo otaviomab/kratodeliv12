@@ -137,6 +137,10 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
         return "PIX";
       case "cash":
         return "Dinheiro";
+      case "meal_voucher":
+        return "Vale Refeição";
+      case "food_voucher":
+        return "Vale Alimentação";
       default:
         return "Desconhecido";
     }

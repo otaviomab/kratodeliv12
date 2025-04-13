@@ -15,5 +15,6 @@ export default function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  return <AdminLayoutClient>{children}</AdminLayoutClient>;
+  // Não renderiza o AdminLayoutClient para as rotas de autenticação
+  return children;
 } 

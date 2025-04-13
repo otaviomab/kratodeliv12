@@ -8,7 +8,6 @@ import {
   CreditCard,
   DollarSign,
   ShoppingBag,
-  Calendar,
   Users,
   TrendingUp,
   Clock
@@ -26,12 +25,12 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, change, icon }: StatCardProps) => (
-  <div className="bg-card rounded-xl border p-6">
+  <div className="bg-white dark:bg-card rounded-lg p-6 transition-all duration-200 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] border border-border/10">
     <div className="flex items-center justify-between mb-4">
       <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-      <div className="p-2 bg-muted rounded-md">{icon}</div>
+      <div className="p-2 bg-primary/5 rounded-full text-primary">{icon}</div>
     </div>
-    <div className="text-2xl font-bold">{value}</div>
+    <div className="text-2xl font-semibold text-foreground">{value}</div>
     <div className="flex items-center mt-2 text-sm">
       {change.positive ? (
         <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
@@ -41,7 +40,7 @@ const StatCard = ({ title, value, change, icon }: StatCardProps) => (
       <span
         className={`${
           change.positive ? "text-green-500" : "text-red-500"
-        }`}
+        } font-medium`}
       >
         {change.value} {change.positive ? "aumento" : "queda"}
       </span>
@@ -119,16 +118,16 @@ export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("week");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 p-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-card p-6 rounded-lg border border-border/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
         <div className="flex space-x-2">
           {timeRanges.map((range) => (
             <button
               key={range.id}
               onClick={() => setSelectedTimeRange(range.id)}
-              className={`px-3 py-1 text-sm rounded-md ${
+              className={`px-4 py-2 text-sm rounded-md transition-all duration-200 font-medium ${
                 selectedTimeRange === range.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted hover:bg-muted/80"
@@ -146,50 +145,58 @@ export default function DashboardPage() {
           title="Faturamento Total"
           value="R$ 24.350,00"
           change={{ value: "12%", positive: true }}
-          icon={<DollarSign className="h-5 w-5 text-muted-foreground" />}
+          icon={<DollarSign className="h-5 w-5" />}
         />
         <StatCard
           title="Pedidos"
           value="285"
           change={{ value: "8%", positive: true }}
-          icon={<ShoppingBag className="h-5 w-5 text-muted-foreground" />}
+          icon={<ShoppingBag className="h-5 w-5" />}
         />
         <StatCard
           title="Ticket Médio"
           value="R$ 85,44"
           change={{ value: "3%", positive: true }}
-          icon={<CreditCard className="h-5 w-5 text-muted-foreground" />}
+          icon={<CreditCard className="h-5 w-5" />}
         />
         <StatCard
           title="Clientes"
           value="192"
           change={{ value: "5%", positive: false }}
-          icon={<Users className="h-5 w-5 text-muted-foreground" />}
+          icon={<Users className="h-5 w-5" />}
         />
       </div>
 
       {/* Gráfico e pedidos recentes */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
         {/* Gráfico de vendas */}
-        <div className="lg:col-span-4 bg-card rounded-xl border p-6">
+        <div className="lg:col-span-4 bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-lg font-medium">Vendas Semanais</h3>
+            <div className="space-y-1">
+              <h3 className="text-lg font-medium">Vendas Semanais</h3>
+              <p className="text-sm text-muted-foreground">Acompanhe o desempenho das suas vendas</p>
+            </div>
             <Link 
               href="/admin/reports" 
-              className="text-sm text-primary hover:underline"
+              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
             >
+              <TrendingUp className="h-4 w-4" />
               Ver relatórios
             </Link>
           </div>
           
-          {/* Gráfico simplificado */}
+          {/* Gráfico melhorado */}
           <div className="h-64 flex items-end justify-between">
             {chartData.map((day) => (
-              <div key={day.day} className="flex flex-col items-center flex-1">
+              <div key={day.day} className="flex flex-col items-center flex-1 group">
                 <div 
-                  className="bg-primary/80 hover:bg-primary rounded-t-md w-7"
+                  className="bg-primary/80 w-7 rounded-t-md transition-all duration-200 group-hover:bg-primary"
                   style={{ height: `${(day.sales / 5000) * 100}%` }}
-                ></div>
+                >
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 -translate-y-8 text-xs bg-card text-foreground shadow-sm rounded px-2 py-1">
+                    R$ {day.sales.toLocaleString()}
+                  </div>
+                </div>
                 <div className="mt-2 text-xs font-medium">{day.day}</div>
               </div>
             ))}
@@ -197,49 +204,44 @@ export default function DashboardPage() {
         </div>
 
         {/* Pedidos recentes */}
-        <div className="lg:col-span-3 bg-card rounded-xl border p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Pedidos Recentes</h3>
+        <div className="lg:col-span-3 bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+          <div className="flex justify-between items-center mb-6">
+            <div className="space-y-1">
+              <h3 className="text-lg font-medium">Pedidos Recentes</h3>
+              <p className="text-sm text-muted-foreground">Últimas atualizações de pedidos</p>
+            </div>
             <Link 
               href="/admin/orders" 
-              className="text-sm text-primary hover:underline"
+              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
             >
+              <Clock className="h-4 w-4" />
               Ver todos
             </Link>
           </div>
-          <div className="space-y-4">
-            {recentOrders.slice(0, 4).map((order) => (
+
+          <div className="space-y-3">
+            {recentOrders.map((order) => (
               <div
                 key={order.id}
-                className="flex items-center p-3 rounded-lg hover:bg-muted"
+                className="flex items-center justify-between p-3 rounded-md bg-[#fdfaf5] dark:bg-card/60 hover:bg-[#fcf8f2] dark:hover:bg-card/80 transition-colors"
               >
-                <div className="mr-4 flex-shrink-0">
-                  <div className="p-2 bg-muted rounded-full">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                <div className="space-y-1">
+                  <p className="font-medium">{order.customer}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{order.id}</span>
+                    <span>•</span>
+                    <span>{order.date}</span>
                   </div>
                 </div>
-                <div className="flex-grow min-w-0">
-                  <div className="flex justify-between items-center">
-                    <p className="truncate font-medium">{order.customer}</p>
-                    <p className="text-sm text-muted-foreground">{order.date}</p>
-                  </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <div className="flex items-center">
-                      <span className="text-xs text-muted-foreground mr-2">{order.id}</span>
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          order.status === "Entregue"
-                            ? "bg-green-100 text-green-800"
-                            : order.status === "Em preparo"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium">{order.amount}</p>
-                  </div>
+                <div className="text-right">
+                  <p className="font-medium">{order.amount}</p>
+                  <span className={`text-sm ${
+                    order.status === 'Entregue' ? 'text-green-500' :
+                    order.status === 'Em preparo' ? 'text-yellow-500' :
+                    'text-blue-500'
+                  }`}>
+                    {order.status}
+                  </span>
                 </div>
               </div>
             ))}
@@ -248,30 +250,33 @@ export default function DashboardPage() {
       </div>
 
       {/* Seção de produtos mais vendidos */}
-      <div className="bg-card rounded-xl border p-6">
+      <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium">Produtos Mais Vendidos</h3>
+          <div className="space-y-1">
+            <h3 className="text-lg font-medium">Produtos Mais Vendidos</h3>
+            <p className="text-sm text-muted-foreground">Top produtos por receita</p>
+          </div>
           <Link 
             href="/admin/menu/products" 
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-primary hover:text-primary/80 transition-colors"
           >
             Gerenciar produtos
           </Link>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y">
+          <table className="min-w-full">
             <thead>
-              <tr className="text-left">
-                <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Produto</th>
-                <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Unidades Vendidas</th>
-                <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Receita Total</th>
+              <tr className="border-b border-border/10">
+                <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider text-left">Produto</th>
+                <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider text-left">Unidades Vendidas</th>
+                <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider text-left">Receita Total</th>
                 <th className="py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">Tendência</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border/10">
               {topSellingProducts.map((product, index) => (
-                <tr key={index} className="hover:bg-muted/50">
+                <tr key={index} className="hover:bg-[#fdfaf5] dark:hover:bg-card/80 transition-colors">
                   <td className="py-3 px-4 whitespace-nowrap font-medium">{product.name}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{product.quantity}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{product.revenue}</td>

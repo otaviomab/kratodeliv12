@@ -1,7 +1,7 @@
 ---
-description: 
+description: Sempre que for usar comandos "git" deve antes verificar esta rule
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 ## Uso do Git
 
