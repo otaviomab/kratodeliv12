@@ -1,0 +1,40 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Regras de Documentação
+
+## Mantenha dois arquivos principais
+Índice (docs/indice.md): Um sumário organizado por seções (ex.: Autenticação, Cardápio, Pagamentos), com links para as partes correspondentes no arquivo de documentação detalhada.
+Exemplo:
+
+### Índice
+- [Autenticação](mdc:#autenticacao)
+- [Cardápio](mdc:#cardapio)
+
+Documentação Detalhada (docs/documentacao.md): Contém as explicações completas de cada funcionalidade ou componente.
+
+## Atualize o índice sempre que adicionar algo novo
+Toda vez que uma nova funcionalidade ou componente for desenvolvido, adicione uma entrada no índice com um link para a seção correspondente no arquivo de documentação detalhada.
+
+## Documente imediatamente após desenvolver
+Assim que terminar de criar uma funcionalidade ou componente, a AI deve documentar:
+Propósito: O que essa parte faz (ex.: "Gerencia o login de usuários").
+Implementação: Como foi feita (ex.: "Usa Appwrite com JWT para autenticação").
+Exemplos: Trechos de código ou cenários práticos, se aplicável.
+Exemplo no documentacao.md:
+
+### Autenticação
+**Propósito**: Permite que usuários façam login no sistema.
+**Implementação**: Usa Appwrite com tokens JWT.
+**Exemplo**: `POST /login { "email": "user@example.com", "senha": "123" }`
+
+## Use Markdown para tudo
+Formate com cabeçalhos (#, ##), listas e blocos de código para manter tudo legível.
+
+## Versione a documentação
+Faça commits separados para mudanças na documentação, com mensagens como "Adiciona doc: [nome da funcionalidade]".
+
+## Revise regularmente
+Cheque se a documentação está atualizada com o código, especialmente após grandes mudanças.

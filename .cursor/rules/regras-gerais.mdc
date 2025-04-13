@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## **Cursor Rules Gerais para o Projeto**
+
+1. **Adote um padrão de nomenclatura consistente**  
+   - Use `camelCase` para variáveis/funções e `PascalCase` para componentes.
+
+2. **Comente o código de forma clara**  
+   - Adicione comentários curtos e úteis em trechos complexos, explicando o "porquê" da lógica.
+
+3. **Use ferramentas de linting e formatação**  
+   - Configure ESLint e Prettier para manter o código limpo e padronizado.
+
+4. **Implemente testes**  
+   - Crie testes unitários (para componentes) e de integração (para fluxos críticos).
+
+5. **Otimize para dispositivos móveis**  
+   - Priorize performance em telas menores, com carregamento rápido e uso eficiente de recursos.
+
+6. **Use Git com commits significativos**  
+   - Faça commits pequenos e descritivos, como "Adiciona autenticação com Appwrite".
+
+7. **Documente APIs e endpoints**  
+   - Mantenha um registro claro de todas as chamadas ao Appwrite, incluindo parâmetros e respostas.
+
+8. **Adicione logging para depuração**  
+   - Registre eventos importantes (erros, ações do usuário) para facilitar a análise de problemas.
+
+9. **Priorize segurança**  
+    - Proteja contra XSS (sanitizando entradas) e CSRF (usando tokens), além de usar HTTPS.

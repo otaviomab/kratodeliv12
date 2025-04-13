@@ -1,0 +1,36 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## **Cursor Rules para Appwrite**
+
+1. **Use o SDK oficial do Appwrite**  
+   - Interaja com o backend exclusivamente pelo SDK oficial para consistência e suporte.
+
+2. **Configure permissões específicas**  
+   - Defina permissões detalhadas para cada coleção e bucket, limitando o acesso conforme necessário.
+
+3. **Implemente autenticação com Appwrite Auth**  
+   - Use os recursos nativos do Appwrite para login, registro e gerenciamento de sessões.
+
+4. **Garanta segurança nas senhas**  
+   - Confie no hashing automático do Appwrite para armazenar senhas de forma segura.
+
+5. **Otimize queries no banco de dados**  
+   - Busque apenas os dados necessários, usando filtros e limites nas consultas.
+
+6. **Prefira uploads diretos para o Storage**  
+   - Envie arquivos diretamente ao Appwrite Storage, evitando codificação em base64.
+
+7. **Aproveite o Appwrite Realtime**  
+   - Use o recurso de tempo real para atualizações dinâmicas, como novos pedidos ou notificações.
+
+8. **Armazene chaves em variáveis de ambiente**  
+   - Mantenha IDs de projetos, chaves de API e segredos em `.env`, fora do código.
+
+9. **Use funções serverless quando necessário**  
+   - Implemente lógica backend complexa com as funções serverless do Appwrite.
+
+10. **Monitore o uso de recursos**  
+    - Acompanhe o consumo de banda, armazenamento e requisições para otimizar custos.

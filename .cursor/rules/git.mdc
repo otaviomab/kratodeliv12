@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Uso do Git
+
+**Prefixos de Mensagens de Commit:**
+
+- `fix:` para correções de bugs
+- `feat:` para novas funcionalidades
+- `perf:` para melhorias de performance
+- `docs:` para mudanças na documentação
+- `style:` para ajustes de formatação (espaços, vírgulas, etc.)
+- `refactor:` para refatoração de código sem adicionar novas funcionalidades ou corrigir bugs
+- `test:` para adição ou correção de testes
+- `chore:` para tarefas de manutenção (ex: atualização de dependências)
+
+**Regras:**
+- Usar letras minúsculas nas mensagens de commit
+- Manter a linha de resumo concisa (até 72 caracteres)
+- Incluir descrição para mudanças não óbvias
+- Referenciar números de issues quando aplicável

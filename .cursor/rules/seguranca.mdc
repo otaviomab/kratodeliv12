@@ -1,0 +1,31 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Use HTTPS em produção
+Todas as comunicações devem ser criptografadas para proteger dados como senhas e informações pessoais
+
+## Valide e limpe entradas do usuário
+Sempre cheque e sanitize dados de formulários ou URLs para evitar ataques como SQL Injection ou XSS.
+
+## Autenticação forte
+Use senhas complexas, tokens de acesso com expiração curta e, se possível, autenticação de dois fatores (MFA).
+
+## Controle de acesso
+Configure permissões no Appwrite (ou outra ferramenta) para que cada usuário só acesse o que precisa.
+
+## Proteja contra CSRF
+Adicione tokens CSRF em formulários para impedir ações não autorizadas.
+
+## Limite tentativas de login
+Após várias falhas, bloqueie o acesso ou adicione delays para evitar ataques de força bruta.
+
+## Atualize dependências
+Mantenha bibliotecas e frameworks atualizados para corrigir vulnerabilidades conhecidas.
+
+## Não exponha dados sensíveis
+Evite deixar chaves de API, senhas ou informações privadas no código, logs ou repositórios públicos.
+
+## Faça auditorias regulares
+Revise o código, especialmente em áreas críticas como autenticação e pagamentos, para encontrar falhas.

@@ -1,0 +1,237 @@
+---
+description: Deve ser usada quando quiser saber como é a arquitetura do projeto
+globs: 
+alwaysApply: false
+---
+# Documentação do Projeto - Cardápio Digital Krato (Next.js + Appwrite)
+
+## Estrutura de Diretórios Principal (usar como referencia)
+
+/krato-deliv
+├── /app                  # Diretório principal do Next.js (App Router)
+│   ├── /cardapio         # Rota para cardápio
+│   │   ├── /[slug]         # Rota dinâmica ajustada para /cardapio/[slug]
+│   │   │   └── page.tsx  # Página dinâmica do cardápio
+│   │   └── page.tsx      # Página geral do cardápio (opcional)
+│   ├── /cart             # Carrinho de compras
+│   │   └── page.tsx      # Página do carrinho
+│   ├── /order-status     # Status do pedido
+│   │   └── page.tsx      # Página de status
+│   ├── /admin            # Área administrativa
+│   │   ├── /login        # Login administrativo
+│   │   │   └── page.tsx  # Página de login
+│   │   ├── /signup       # Cadastro administrativo
+│   │   │   └── page.tsx  # Página de cadastro
+│   │   ├── /dashboard    # Painel de controle
+│   │   │   └── page.tsx  # Página do dashboard
+│   │   ├── /orders       # Gerenciamento de pedidos
+│   │   │   └── page.tsx  # Página de pedidos
+│   │   └── /settings     # Configurações
+│   │       └── page.tsx  # Página de configurações
+│   └── /api              # Rotas de API (ex.: integração com Appwrite)
+│       └── /route.ts     # Exemplo de rota API
+├── /components           # Componentes reutilizáveis
+│   ├── Header.tsx        # Cabeçalho
+│   ├── Footer.tsx        # Rodapé
+│   ├── MenuItem.tsx      # Item do cardápio
+│   └── AdminSidebar.tsx  # Sidebar administrativa
+├── /hooks                # Hooks personalizados
+│   ├── useAuth.ts        # Hook para autenticação com Appwrite
+│   ├── useCart.ts        # Hook para gerenciamento do carrinho
+│   └── useOrders.ts      # Hook para pedidos
+├── /utils                # Funções utilitárias
+│   ├── formatPrice.ts    # Formatação de preços
+│   └── apiClient.ts      # Cliente Appwrite pré-configurado
+├── /types                # Definições de tipos (TypeScript)
+│   ├── menu.ts           # Tipos para itens do cardápio
+│   ├── order.ts          # Tipos para pedidos
+│   └── user.ts           # Tipos para usuários
+├── /shared               # Recursos compartilhados
+│   ├── constants.ts      # Constantes globais
+│   └── config.ts         # Configurações globais (ex.: Appwrite endpoint)
+├── /styles               # Estilos (ex.: Tailwind ou CSS)
+│   ├── globals.css       # Estilos globais
+│   └── admin.css         # Estilos específicos da área admin
+├── /public               # Arquivos estáticos
+│   ├── /images           # Imagens públicas
+│   └── favicon.ico       # Favicon
+├── /lib                  # Bibliotecas ou integrações externas
+│   └── appwrite.ts       # Configuração do SDK do Appwrite
+├── next.config.js        # Configuração do Next.js
+├── tsconfig.json         # Configuração do TypeScript
+└── package.json          # Dependências do projeto
+
+
+## Principais Páginas e Rotas
+
+1. **Página Inicial (`/`)**  
+   - Redireciona para o slug do restaurante padrão.
+
+2. **Página do Restaurante (`/cardapio/[slug]`)**  
+   - Exibe o cardápio do restaurante organizado por categorias.
+
+3. **Carrinho (`/cart`)**  
+   - Gerencia itens do pedido, cálculo de taxas de entrega e informações do cliente.
+
+4. **Status do Pedido (`/order-status`)**  
+   - Permite ao cliente acompanhar o status atual do pedido.
+
+5. **Área Administrativa**  
+   - **Login/Signup (`/admin/login`, `/admin/signup`)**: Autenticação para administradores.
+   - **Dashboard (`/admin/dashboard`)**: Visão geral com estatísticas e pedidos recentes.
+   - **Pedidos (`/admin/orders`)**: Gerenciamento de pedidos.
+   - **Menu/Cardápio (`/admin/menu`)**: Edição e configuração do cardápio.
+   - **Configurações (`/admin/settings`)**:
+     - **Geral**: Informações básicas, logo, imagem de capa, contatos.
+     - **Endereço**: Localização do restaurante.
+     - **Horários**: Configuração dos horários de funcionamento.
+     - **Entregas**: Definição de zonas de entrega e taxas.
+     - **Tipo de Estabelecimento**: Configuração do tipo (restaurante, pizzaria, etc.).
+     - **Pagamentos**: Métodos de pagamento aceitos.
+     - **WhatsApp**: Integração para envio de notificações.
+     - **Impressão Térmica**: Configuração de impressoras térmicas para comandas.
+   - **Relatórios (`/admin/reports`)**: Estatísticas detalhadas de vendas.
+   - **Planos de Assinatura (`/admin/plans`)**: Visualização e gerenciamento do plano atual.
+
+## Funcionalidades Principais
+
+### 1. **Cardápio Digital**
+- Exibição de produtos organizados por categorias.
+- Suporte a produtos personalizados (ex.: pizzas meio a meio).
+- Adicionais e complementos para produtos.
+- Imagens dos produtos armazenadas no **Appwrite Storage**.
+- Informações do restaurante (horários, endereço).
+
+### 2. **Carrinho de Compras**
+- Adição e remoção de itens.
+- Ajuste de quantidades.
+- Cálculo de subtotal.
+- Persistência de dados no `localStorage`.
+
+### 3. **Checkout**
+- Opções de entrega ou retirada no local.
+- Cálculo de taxas de entrega baseado em zonas.
+- Suporte a diferentes métodos de pagamento.
+- Coleta de dados do cliente (nome, telefone).
+- Busca de endereço por CEP.
+
+### 4. **Gerenciamento de Pedidos (Admin)**
+- Visualização de pedidos pendentes e em andamento.
+- Alteração de status (ex.: confirmado, preparando, entregue).
+- Histórico de pedidos.
+- Notificações em tempo real (Appwrite Realtime).
+
+### 5. **Dashboard Administrativo**
+- Estatísticas de vendas (pedidos do dia, faturamento).
+- Lista de pedidos recentes.
+- Cálculo do ticket médio.
+
+### 6. **Configurações de Restaurante**
+- Edição de informações básicas (nome, endereço).
+- Definição de horários de funcionamento.
+- Configuração de zonas de entrega e taxas.
+- Métodos de pagamento aceitos.
+- Integração com WhatsApp para notificações. (via webhook)
+- Configuração de impressoras térmicas.
+
+### 7. **Notificações em Tempo Real**
+- Comunicação via **Appwrite Realtime**.
+- Notificações para novos pedidos.
+- Atualizações de status em tempo real.
+
+### 8. **Sistema de Autenticação**
+- Login e signup para restaurantes usando **Appwrite Auth**.
+- Gerenciamento de sessões e tokens no frontend.
+
+### 9. **Planos de Assinatura**
+- Implementação de 3 planos (ex.: Básico, Pro, Premium).
+- Cada plano libera funcionalidades específicas (a definir).
+- Controle de permissões e limitações via Appwrite (ex.: roles e permissões).
+
+## Tecnologias e Bibliotecas Utilizadas
+
+Principais:
+- TypeScript: Linguagem base com tipagem estática
+- Next.js 15: Framework React com App Router
+- React 19: Biblioteca JavaScript para construção de interfaces
+- Tailwind CSS: Framework CSS utility-first
+- Bibliotecas complementares importantes:
+- Radix UI: Componentes primitivos acessíveis e não estilizados (Dialog, Dropdown, Tabs, etc.)
+- Zustand: Gerenciamento de estado global
+- lucide-react: Biblioteca de ícones
+- react-hot-toast: Notificações
+- tailwind-merge & class-variance-authority: Utilitários para o Tailwind
+- date-fns: Manipulação de datas
+- recharts: Biblioteca para criação de gráficos
+- react-dropzone: Upload de arquivos
+- react-input-mask & react-number-format: Formatação de inputs
+- Outras utilidades:
+- use-sound: Para reprodução de sons
+- react-day-picker: Seletor de datas
+- Comunicação em Tempo Real: Appwrite Realtime.
+- Banco de Dados: Appwrite Database.
+- Autenticação: Appwrite Auth.
+- Storage: Appwrite Storage (para imagens de produtos, logos, etc.).
+
+## Detalhes de Implementação Importantes
+
+### Arquitetura de Software
+- SSR/SSG: Uso de Server Components para renderização inicial e otimização de SEO.
+- API Routes: Rotas personalizadas em app/api/ para comunicação com Appwrite.
+- Client-Side Rendering: Para interatividade (ex.: carrinho, notificações).
+- Autenticação gerenciada pelo Appwrite Auth.
+
+### Funcionalidades Específicas para Pizzarias
+- Suporte a produtos "meio a meio".
+- Interface dedicada para seleção de sabores.
+
+### Cálculo de Taxas de Entrega
+- Baseado em zonas geográficas.
+- Integração com serviços de busca por CEP.
+- Validação de endereços.
+
+### Cache e Performance
+- Cache de produtos e categorias no frontend.
+- Otimização de carregamento de imagens via Appwrite Storage.
+
+### Tema e Internacionalização
+- Textos em português do Brasil.
+- Formatação de moeda e datas no padrão brasileiro.
+
+### Planos de Assinatura
+- **Plano Básico**: Funcionalidades essenciais (ex.: cardápio digital, pedidos online).
+- **Plano Pro**: Funcionalidades avançadas (ex.: entregas, relatórios).
+- **Plano Premium**: Funcionalidades completas (ex.: suporte prioritário, impressoras térmicas).
+- A lógica será implementada para facilitar a adição de restrições no futuro.
+
+## Próximos Passos para Desenvolvimento
+
+1. **Configuração do Appwrite**
+   - Criar um projeto no Appwrite.
+   - Configurar autenticação com Appwrite Auth.
+   - Criar coleções no Appwrite Database (restaurantes, produtos, pedidos, planos).
+   - Configurar o Appwrite Storage para upload de imagens.
+
+2. **Implementação da Autenticação**
+   - Integrar login/signup com Appwrite Auth.
+   - Gerenciar sessões no frontend com Next.js.
+
+3. **Desenvolvimento do Cardápio Digital**
+   - Criar componentes para exibição de produtos e categorias.
+   - Buscar dados do Appwrite Database.
+
+4. **Carrinho de Compras**
+   - Implementar React Context para estado do carrinho.
+   - Persistir no localStorage com useEffect.
+
+5. **Planos de Assinatura**
+   - Criar estrutura inicial para 3 planos no Appwrite Database.
+   - Implementar lógica para habilitar/desabilitar funcionalidades com base no plano.
+
+6. **Notificações em Tempo Real**
+   - Configurar Appwrite Realtime.
+   - Testar notificações para pedidos e atualizações de status.
+
+7. **Testes e Validação**
+   - Testar cada funcionalidade iterativamente.
+   - Garantir integração correta entre frontend e Appwrite.
