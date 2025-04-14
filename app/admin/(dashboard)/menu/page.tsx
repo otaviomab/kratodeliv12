@@ -1,9 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, RefreshCcw } from "lucide-react";
+import { Plus, Search, RefreshCcw, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Category {
   id: string;
@@ -11,6 +28,93 @@ interface Category {
   description?: string;
   isActive: boolean;
   productCount: number;
+  order: number;
+}
+
+// Componente para linha da tabela com drag and drop
+function SortableTableRow({ 
+  category,
+  onToggleStatus,
+  onDelete
+}: { 
+  category: Category;
+  onToggleStatus: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 1 : 0,
+    position: isDragging ? "relative" : "static",
+    opacity: isDragging ? 0.5 : 1,
+  } as React.CSSProperties;
+
+  return (
+    <tr ref={setNodeRef} style={style} className="hover:bg-[#fdfaf5] dark:hover:bg-card/80 transition-colors">
+      <td className="px-6 py-4">
+        <button className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded" {...attributes} {...listeners}>
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </td>
+      <td className="px-6 py-4">
+        <div className="font-medium">{category.name}</div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="text-sm text-muted-foreground truncate max-w-xs">
+          {category.description || "Sem descrição"}
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="text-sm">{category.productCount} produtos</div>
+      </td>
+      <td className="px-6 py-4">
+        <span 
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}
+        >
+          {category.isActive ? 'Ativo' : 'Inativo'}
+        </span>
+      </td>
+      <td className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => onToggleStatus(category.id)}
+            className="text-sm px-3 py-1.5 rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+          >
+            {category.isActive ? 'Desativar' : 'Ativar'}
+          </button>
+          <Link
+            href={`/admin/menu/products?category=${category.id}`}
+            className="text-sm px-3 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          >
+            Ver produtos
+          </Link>
+          <Link
+            href={`/admin/menu/categories/${category.id}`}
+            className="text-sm px-3 py-1.5 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+          >
+            Editar
+          </Link>
+          <button
+            onClick={() => onDelete(category.id)}
+            className="text-sm px-3 py-1.5 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+          >
+            Excluir
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
 }
 
 export default function MenuPage() {
@@ -22,6 +126,13 @@ export default function MenuPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   // Carrega dados simulados
   useEffect(() => {
     const loadData = async () => {
@@ -30,12 +141,12 @@ export default function MenuPage() {
         // Simulação de carregamento de dados
         setTimeout(() => {
           const mockCategories: Category[] = [
-            { id: "1", name: "Entradas", description: "Aperitivos e entradas", isActive: true, productCount: 8 },
-            { id: "2", name: "Pratos Principais", description: "Pratos principais e executivos", isActive: true, productCount: 12 },
-            { id: "3", name: "Sobremesas", description: "Doces e sobremesas", isActive: true, productCount: 6 },
-            { id: "4", name: "Bebidas", description: "Bebidas não alcoólicas", isActive: true, productCount: 10 },
-            { id: "5", name: "Cervejas", description: "Cervejas nacionais e importadas", isActive: false, productCount: 5 },
-            { id: "6", name: "Drinks", description: "Drinks e coquetéis", isActive: true, productCount: 7 },
+            { id: "1", name: "Entradas", description: "Aperitivos e entradas", isActive: true, productCount: 8, order: 1 },
+            { id: "2", name: "Pratos Principais", description: "Pratos principais e executivos", isActive: true, productCount: 12, order: 2 },
+            { id: "3", name: "Sobremesas", description: "Doces e sobremesas", isActive: true, productCount: 6, order: 3 },
+            { id: "4", name: "Bebidas", description: "Bebidas não alcoólicas", isActive: true, productCount: 10, order: 4 },
+            { id: "5", name: "Cervejas", description: "Cervejas nacionais e importadas", isActive: false, productCount: 5, order: 5 },
+            { id: "6", name: "Drinks", description: "Drinks e coquetéis", isActive: true, productCount: 7, order: 6 },
           ];
           setCategories(mockCategories);
           setIsLoading(false);
@@ -53,7 +164,7 @@ export default function MenuPage() {
   const filteredCategories = categories.filter(category => 
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  ).sort((a, b) => a.order - b.order);
 
   // Lidar com a abertura do modal de exclusão
   const handleDeleteClick = (categoryId: string) => {
@@ -83,7 +194,8 @@ export default function MenuPage() {
       name: newCategory.name,
       description: newCategory.description,
       isActive: true,
-      productCount: 0
+      productCount: 0,
+      order: categories.length + 1
     };
 
     setCategories([...categories, newCategoryItem]);
@@ -115,6 +227,28 @@ export default function MenuPage() {
     }, 800);
   };
 
+  // Lidar com o fim do drag and drop
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setCategories((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Atualiza a ordem de todas as categorias
+        return newItems.map((item, index) => ({
+          ...item,
+          order: index + 1
+        }));
+      });
+      
+      toast.success("Ordem das categorias atualizada");
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       {/* Cabeçalho */}
@@ -137,7 +271,7 @@ export default function MenuPage() {
             </button>
             <button 
               onClick={() => setShowAddModal(true)}
-              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
               Nova Categoria
@@ -165,65 +299,39 @@ export default function MenuPage() {
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
             </div>
           ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border/10">
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Nome</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Descrição</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Produtos</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/10">
-                {filteredCategories.map((category) => (
-                  <tr key={category.id} className="hover:bg-[#fdfaf5] dark:hover:bg-card/80 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{category.name}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-muted-foreground truncate max-w-xs">
-                        {category.description || "Sem descrição"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">{category.productCount} produtos</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span 
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {category.isActive ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => toggleCategoryStatus(category.id)}
-                          className="text-sm px-3 py-1.5 rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
-                        >
-                          {category.isActive ? 'Desativar' : 'Ativar'}
-                        </button>
-                        <Link
-                          href={`/admin/menu/${category.id}`}
-                          className="text-sm px-3 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                        >
-                          Ver produtos
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteClick(category.id)}
-                          className="text-sm px-3 py-1.5 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border/10">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground w-10"></th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Nome</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Descrição</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Produtos</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/10">
+                  <SortableContext
+                    items={filteredCategories.map(cat => cat.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {filteredCategories.map((category) => (
+                      <SortableTableRow 
+                        key={category.id} 
+                        category={category} 
+                        onToggleStatus={toggleCategoryStatus}
+                        onDelete={handleDeleteClick}
+                      />
+                    ))}
+                  </SortableContext>
+                </tbody>
+              </table>
+            </DndContext>
           )}
         </div>
       </div>
@@ -290,7 +398,7 @@ export default function MenuPage() {
               </button>
               <button
                 onClick={handleAddCategory}
-                className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
               >
                 Adicionar
               </button>

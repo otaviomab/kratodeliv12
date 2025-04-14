@@ -145,7 +145,7 @@ export default function CategoriesPage() {
         <h2 className="text-3xl font-bold tracking-tight">Categorias do Cardápio</h2>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
+          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md text-sm font-medium"
         >
           <Plus className="mr-2 h-4 w-4" />
           Nova Categoria
@@ -214,7 +214,7 @@ export default function CategoriesPage() {
               </button>
               <button
                 onClick={handleSaveCreate}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
+                className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium"
               >
                 Salvar
               </button>
@@ -296,7 +296,7 @@ export default function CategoriesPage() {
                       </button>
                       <button
                         onClick={handleSaveEdit}
-                        className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-xs"
+                        className="px-3 py-1 bg-primary text-white rounded-md text-xs"
                       >
                         Salvar
                       </button>

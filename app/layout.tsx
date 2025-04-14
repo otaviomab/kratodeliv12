@@ -39,32 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                // Verificar preferência salva
-                const savedTheme = localStorage.getItem('theme');
-                // Verificar preferência do sistema
-                const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-                  .matches ? 'dark' : 'light';
-                
-                // Aplicar tema
-                const theme = savedTheme || systemTheme;
-                if (theme === 'dark') {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-              } catch (e) {
-                console.error(e);
-              }
-            `,
-          }}
-        />
-      </head>
+    <html lang="pt-BR">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

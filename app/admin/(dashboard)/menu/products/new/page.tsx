@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 // Mock de categorias
 const categories = [
@@ -17,6 +18,7 @@ const categories = [
 export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -53,6 +55,31 @@ export default function NewProductPage() {
         [name]: value
       });
     }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("A imagem deve ter no máximo 5MB");
+        return;
+      }
+
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        toast.error("Formato de imagem não suportado");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setPreviewImage(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -176,24 +203,47 @@ export default function NewProductPage() {
                 <label className="block text-sm font-medium mb-3">
                   Imagem do Produto
                 </label>
-                <div className="border-2 border-dashed rounded-md py-8 flex flex-col items-center">
-                  <div className="text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Arraste uma imagem ou clique para fazer upload
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      PNG, JPG ou WEBP (max. 5MB)
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="mt-4 inline-flex items-center px-3 py-1.5 text-sm font-medium border rounded-md"
-                  >
-                    Escolher Arquivo
-                  </button>
+                <div className="border-2 border-dashed rounded-lg p-4">
+                  {previewImage ? (
+                    <div className="relative">
+                      <Image
+                        src={previewImage}
+                        alt="Preview"
+                        width={300}
+                        height={200}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer flex flex-col items-center justify-center py-6 px-4">
+                      <Upload className="h-12 w-12 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground text-center mb-1">
+                        Arraste uma imagem ou clique para fazer upload
+                      </p>
+                      <p className="text-xs text-muted-foreground text-center">
+                        PNG, JPG ou WEBP (max. 5MB)
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        className="mt-4 inline-flex items-center px-3 py-1.5 text-sm font-medium border rounded-md hover:bg-[#fcf8f2] transition-colors"
+                      >
+                        Escolher Arquivo
+                      </button>
+                    </label>
+                  )}
                 </div>
               </div>
               
@@ -254,7 +304,7 @@ export default function NewProductPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium"
             >
               {isSubmitting ? "Salvando..." : "Salvar Produto"}
             </button>

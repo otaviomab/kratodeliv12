@@ -84,6 +84,8 @@
 - [Temas](mdc:#temas-cardapio)
 - [Responsividade](mdc:#responsividade-cardapio)
 - [Estados de Loading](mdc:#loading-cardapio)
+- [Produtos](mdc:#cardapio-produtos)
+- [Upload de Imagens](mdc:#cardapio-upload-imagens)
 
 ## Estrutura do Projeto
 - [Organização de Diretórios](mdc:#estrutura-diretorios)
@@ -113,3 +115,31 @@
 - [Ambiente de Desenvolvimento](mdc:#ambiente-dev)
 - [Ambiente de Produção](mdc:#ambiente-prod)
 - [CI/CD](mdc:#ci-cd)
+
+## Interface do Usuário
+- [Padrões de UI](mdc:#padroes-de-ui)
+
+## Páginas do Admin
+- [Página de Clientes](mdc:#pagina-de-clientes)
+- [Página de Relatórios](mdc:#pagina-de-relatorios)
+
+## Dashboard Admin
+- [Estilização do Dashboard](mdc:#estilizacao-dashboard)
+  - [Página de Clientes](mdc:#pagina-clientes)
+  - [Página de Relatórios](mdc:#pagina-relatorios)
+  - [Página de Planos](mdc:#pagina-planos)
+  - [Página de Configurações](mdc:#pagina-configuracoes)
+
+## Componentes
+- [Header](mdc:#header)
+  - [Remoção do Theme Toggle](mdc:#remocao-theme-toggle)
+
+## Problemas Conhecidos
+- [Erros de Acesso Síncrono](mdc:#erros-acesso-sincrono)
+- [Erros de Stack Trace](mdc:#erros-stack-trace)
+
+## Configurações
+- [Layout e Navegação](mdc:#configuracoes-layout)
+- [Informações Gerais](mdc:#configuracoes-gerais)
+- [Métodos de Pagamento](mdc:#configuracoes-pagamentos)
+- [Configurações de Entrega](mdc:#configuracoes-entrega)

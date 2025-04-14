@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Trash2, Edit, RefreshCcw, Filter } from "lucide-react";
+import { Plus, Search, RefreshCcw, Filter } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -228,40 +228,41 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
       {/* Cabeçalho */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-3xl font-bold">Produtos</h1>
-        <div className="flex items-center space-x-2">
-          <button 
-            onClick={handleRefresh}
-            className="p-2 border rounded-md"
-            disabled={isLoading}
-          >
-            <RefreshCcw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <Link 
-            href="/admin/menu/products/new" 
-            className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Produto
-          </Link>
+      <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-xl font-semibold">Produtos</h1>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleRefresh}
+              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
+              disabled={isLoading}
+            >
+              <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </button>
+            <Link 
+              href="/admin/menu/products/new" 
+              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Produto
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {/* Filtros */}
-      <div className="bg-card rounded-lg border p-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        {/* Filtros */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-8">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Buscar produtos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border rounded-md text-sm"
+                className="w-full pl-9 pr-4 py-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -271,7 +272,7 @@ export default function ProductsPage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="flex-1 p-2 border rounded-md text-sm"
+                className="w-full px-3 py-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="all">Todas as categorias</option>
                 {categories.map(category => (
@@ -286,7 +287,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Lista de produtos */}
-      <div className="bg-card rounded-lg border overflow-hidden">
+      <div className="bg-white dark:bg-card rounded-lg border border-border/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
@@ -295,29 +296,19 @@ export default function ProductsPage() {
           ) : (
             <>
               {filteredProducts.length > 0 ? (
-                <table className="min-w-full divide-y">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Produto
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Categoria
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Preço
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Ações
-                      </th>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border/10">
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Produto</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Categoria</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Preço</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
+                      <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-card divide-y">
+                  <tbody className="divide-y divide-border/10">
                     {filteredProducts.map((product) => (
-                      <tr key={product.id} className="hover:bg-muted/50">
+                      <tr key={product.id} className="hover:bg-[#fdfaf5] dark:hover:bg-card/80 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
                             <div className="h-10 w-10 flex-shrink-0 rounded-md bg-muted overflow-hidden">
@@ -333,48 +324,42 @@ export default function ProductsPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 rounded-md text-xs bg-muted">
+                        <td className="px-6 py-4">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs bg-primary/10 text-primary">
                             {product.categoryName}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4">
                           <div className="text-sm font-medium">{formatPrice(product.price)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4">
                           <span 
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}
                           >
                             {product.isActive ? 'Ativo' : 'Inativo'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          <div className="flex justify-end space-x-2">
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => toggleProductStatus(product.id)}
-                              className={`px-3 py-1 rounded-md text-xs ${
-                                product.isActive 
-                                  ? 'bg-red-100 text-red-800 hover:bg-red-200' 
-                                  : 'bg-green-100 text-green-800 hover:bg-green-200'
-                              }`}
+                              className="text-sm px-3 py-1.5 rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
                             >
                               {product.isActive ? 'Desativar' : 'Ativar'}
                             </button>
                             <Link
                               href={`/admin/menu/products/${product.id}`}
-                              className="px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-xs hover:bg-blue-200 inline-flex items-center"
+                              className="text-sm px-3 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                             >
-                              <Edit className="h-3 w-3 mr-1" />
-                              <span>Editar</span>
+                              Editar
                             </Link>
                             <button
                               onClick={() => handleDeleteClick(product.id)}
-                              className="px-3 py-1 bg-gray-100 text-gray-800 rounded-md text-xs hover:bg-gray-200 inline-flex items-center"
+                              className="text-sm px-3 py-1.5 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
                             >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              <span>Excluir</span>
+                              Excluir
                             </button>
                           </div>
                         </td>
@@ -395,21 +380,21 @@ export default function ProductsPage() {
       {/* Modal de exclusão */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg shadow-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-semibold mb-4">Confirmar exclusão</h3>
-            <p className="mb-6">
+          <div className="bg-white dark:bg-card rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirmar exclusão</h2>
+            <p className="text-muted-foreground mb-6">
               Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
             </p>
-            <div className="flex justify-end space-x-2">
-              <button 
+            <div className="flex justify-end gap-2">
+              <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 border rounded-md text-sm"
+                className="px-4 py-2 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md text-sm"
+                className="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
               >
                 Excluir
               </button>

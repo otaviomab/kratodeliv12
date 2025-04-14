@@ -49,7 +49,7 @@ const sidebarItems = [
   },
   {
     title: "Configurações",
-    href: "/admin/settings",
+    href: "/admin/settings/general",
     icon: Settings,
   },
 ];

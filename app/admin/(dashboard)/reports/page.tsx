@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DownloadIcon, PieChartIcon, BarChartIcon, TrendingUpIcon } from "lucide-react";
+import { DownloadIcon, PieChartIcon, BarChartIcon, TrendingUpIcon, UsersIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,13 +58,8 @@ const customerData: CustomerData[] = [
 export default function ReportsPage() {
   const [reportPeriod, setReportPeriod] = useState("7dias");
 
-  // Função simulada para exportar relatórios
-  const exportReport = (format: string) => {
-    alert(`Relatório exportado em formato ${format}`);
-  };
-
-  // Função genérica para renderizar tabelas
-  const renderTable = <T extends Record<string, unknown>>(data: T[], headers: string[], accessors: (keyof T)[]) => (
+  // Função para renderizar tabelas
+  const renderTable = (data: Record<string, unknown>[], headers: string[], keys: string[]) => (
     <div className="rounded-md border">
       <table className="w-full">
         <thead>
@@ -77,11 +72,11 @@ export default function ReportsPage() {
         <tbody>
           {data.map((row, rowIndex) => (
             <tr key={rowIndex} className="border-b hover:bg-muted/50">
-              {accessors.map((accessor, colIndex) => (
+              {keys.map((key, colIndex) => (
                 <td key={colIndex} className="p-4 align-middle">
-                  {accessor === "valor" 
-                    ? `R$ ${Number(row[accessor]).toFixed(2)}` 
-                    : String(row[accessor]) as ReactNode}
+                  {key === "valor" 
+                    ? `R$ ${Number(row[key]).toFixed(2)}` 
+                    : String(row[key]) as ReactNode}
                 </td>
               ))}
             </tr>
@@ -92,140 +87,156 @@ export default function ReportsPage() {
   );
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
-          <p className="text-muted-foreground">
-            Visualize estatísticas e relatórios de desempenho do seu estabelecimento
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Select value={reportPeriod} onValueChange={setReportPeriod}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Período" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7dias">Últimos 7 dias</SelectItem>
-              <SelectItem value="30dias">Últimos 30 dias</SelectItem>
-              <SelectItem value="3meses">Últimos 3 meses</SelectItem>
-              <SelectItem value="12meses">Últimos 12 meses</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => exportReport("excel")}>
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
+      <div className="bg-white rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
+            <p className="text-muted-foreground">
+              Acompanhe o desempenho do seu negócio
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Select
+              value={reportPeriod}
+              onValueChange={setReportPeriod}
+            >
+              <SelectTrigger className="w-[180px] bg-white">
+                <SelectValue placeholder="Selecione o período" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectItem value="7dias" className="bg-white hover:bg-[#fcf8f2]">Últimos 7 dias</SelectItem>
+                <SelectItem value="15dias" className="bg-white hover:bg-[#fcf8f2]">Últimos 15 dias</SelectItem>
+                <SelectItem value="30dias" className="bg-white hover:bg-[#fcf8f2]">Últimos 30 dias</SelectItem>
+                <SelectItem value="90dias" className="bg-white hover:bg-[#fcf8f2]">Últimos 90 dias</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline">
               <DownloadIcon className="mr-2 h-4 w-4" />
-              Excel
-            </Button>
-            <Button variant="outline" onClick={() => exportReport("pdf")}>
-              <DownloadIcon className="mr-2 h-4 w-4" />
-              PDF
+              Exportar
             </Button>
           </div>
         </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Faturamento no Período</CardTitle>
-            <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 3.069,70</div>
-            <p className="text-xs text-muted-foreground">+12% em relação ao período anterior</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total de Pedidos</CardTitle>
-            <BarChartIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">59</div>
-            <p className="text-xs text-muted-foreground">+8% em relação ao período anterior</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
-            <PieChartIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 52,03</div>
-            <p className="text-xs text-muted-foreground">+3% em relação ao período anterior</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+          <Card className="bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Vendas Totais</CardTitle>
+              <PieChartIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R$ 45.231,89</div>
+              <p className="text-xs text-muted-foreground">
+                +20.1% em relação ao período anterior
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pedidos</CardTitle>
+              <BarChartIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">+573</div>
+              <p className="text-xs text-muted-foreground">
+                +12.4% em relação ao período anterior
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
+              <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R$ 78,94</div>
+              <p className="text-xs text-muted-foreground">
+                +4.3% em relação ao período anterior
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Novos Clientes</CardTitle>
+              <UsersIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">+249</div>
+              <p className="text-xs text-muted-foreground">
+                +10.2% em relação ao período anterior
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Tabs defaultValue="vendas" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="vendas">Vendas</TabsTrigger>
-          <TabsTrigger value="produtos">Produtos Populares</TabsTrigger>
-          <TabsTrigger value="clientes">Clientes</TabsTrigger>
-        </TabsList>
-        <TabsContent value="vendas">
-          <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Vendas</CardTitle>
-              <CardDescription>
-                Acompanhe as vendas diárias do seu estabelecimento
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] w-full bg-muted/20 rounded-md flex items-center justify-center mb-4">
-                <p className="text-muted-foreground">Gráfico de Vendas no Período</p>
-              </div>
-              {renderTable(
-                salesData,
-                ["Data", "Pedidos", "Valor Total (R$)", "Método de Pagamento"],
-                ["data", "pedidos", "valor", "metodo"]
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="produtos">
-          <Card>
-            <CardHeader>
-              <CardTitle>Produtos Mais Vendidos</CardTitle>
-              <CardDescription>
-                Veja quais são os produtos com maior saída
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] w-full bg-muted/20 rounded-md flex items-center justify-center mb-4">
-                <p className="text-muted-foreground">Gráfico de Produtos Mais Vendidos</p>
-              </div>
-              {renderTable(
-                topProducts,
-                ["Nome do Produto", "Quantidade Vendida", "Valor Total (R$)", "Categoria"],
-                ["nome", "vendas", "valor", "categoria"]
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="clientes">
-          <Card>
-            <CardHeader>
-              <CardTitle>Clientes Frequentes</CardTitle>
-              <CardDescription>
-                Analise seus clientes mais fiéis
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] w-full bg-muted/20 rounded-md flex items-center justify-center mb-4">
-                <p className="text-muted-foreground">Gráfico de Frequência de Clientes</p>
-              </div>
-              {renderTable(
-                customerData,
-                ["Nome do Cliente", "Total de Pedidos", "Valor Gasto (R$)", "Último Pedido"],
-                ["nome", "pedidos", "valor", "ultimoPedido"]
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <Tabs defaultValue="vendas" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="vendas">Vendas</TabsTrigger>
+            <TabsTrigger value="produtos">Produtos Populares</TabsTrigger>
+            <TabsTrigger value="clientes">Clientes</TabsTrigger>
+          </TabsList>
+          <TabsContent value="vendas">
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle>Histórico de Vendas</CardTitle>
+                <CardDescription>
+                  Acompanhe as vendas diárias do seu estabelecimento
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] w-full bg-[#fcf8f2] rounded-md flex items-center justify-center mb-4">
+                  <p className="text-muted-foreground">Gráfico de Vendas no Período</p>
+                </div>
+                {renderTable(
+                  salesData,
+                  ["Data", "Pedidos", "Valor Total (R$)", "Método de Pagamento"],
+                  ["data", "pedidos", "valor", "metodo"]
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="produtos">
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle>Produtos Mais Vendidos</CardTitle>
+                <CardDescription>
+                  Veja quais são os produtos com maior saída
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] w-full bg-[#fcf8f2] rounded-md flex items-center justify-center mb-4">
+                  <p className="text-muted-foreground">Gráfico de Produtos Mais Vendidos</p>
+                </div>
+                {renderTable(
+                  topProducts,
+                  ["Nome do Produto", "Quantidade Vendida", "Valor Total (R$)", "Categoria"],
+                  ["nome", "vendas", "valor", "categoria"]
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="clientes">
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle>Clientes Frequentes</CardTitle>
+                <CardDescription>
+                  Analise seus clientes mais fiéis
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] w-full bg-[#fcf8f2] rounded-md flex items-center justify-center mb-4">
+                  <p className="text-muted-foreground">Gráfico de Frequência de Clientes</p>
+                </div>
+                {renderTable(
+                  customerData,
+                  ["Nome do Cliente", "Total de Pedidos", "Valor Gasto (R$)", "Último Pedido"],
+                  ["nome", "pedidos", "valor", "ultimoPedido"]
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 } 

@@ -173,30 +173,32 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
       {/* Cabeçalho */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center space-x-2">
-          <Link href="/admin/orders" className="p-2 border rounded-md hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-2xl font-bold">Pedido #{order.id}</h1>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center px-3 py-1.5 border rounded-md text-sm hover:bg-muted"
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Imprimir
-          </button>
+      <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center space-x-2">
+            <Link href="/admin/orders" className="p-2 border rounded-md hover:bg-muted">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <h1 className="text-2xl font-bold">Pedido #{order.id}</h1>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center px-3 py-1.5 border rounded-md text-sm hover:bg-muted"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Informações do Pedido */}
         <div className="md:col-span-2 space-y-6">
-          <div className="bg-card rounded-lg border p-6">
+          <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
             <h2 className="text-xl font-semibold mb-4">Detalhes do Pedido</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -232,7 +234,7 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
               <h3 className="text-lg font-medium mb-3">Itens do Pedido</h3>
               <div className="space-y-4">
                 {order.items.map((item, index) => (
-                  <div key={index} className="border rounded-md p-4">
+                  <div key={index} className="bg-white dark:bg-card rounded-lg border border-border/10 p-4 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-baseline">
@@ -295,7 +297,7 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
         {/* Barra Lateral */}
         <div className="space-y-6">
           {/* Informações do Cliente */}
-          <div className="bg-card rounded-lg border p-6">
+          <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
             <h2 className="text-xl font-semibold mb-4">Cliente</h2>
             
             <div className="space-y-3">
@@ -326,7 +328,7 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
           </div>
 
           {/* Atualização de Status */}
-          <div className="bg-card rounded-lg border p-6">
+          <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
             <h2 className="text-xl font-semibold mb-4">Atualizar Status</h2>
             
             <div className="space-y-3">

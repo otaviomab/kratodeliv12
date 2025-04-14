@@ -115,104 +115,106 @@ export default function PlanosPage() {
   };
 
   return (
-    <div className="container py-10">
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Escolha o Plano Ideal para o Seu Negócio</h1>
-        <p className="text-muted-foreground max-w-[700px] mx-auto">
-          Selecione o plano que melhor atende às necessidades do seu estabelecimento e comece a transformar sua experiência digital hoje mesmo.
-        </p>
-      </div>
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
+      <div className="bg-white rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Escolha o Plano Ideal para o Seu Negócio</h1>
+          <p className="text-muted-foreground max-w-[700px] mx-auto">
+            Selecione o plano que melhor atende às necessidades do seu estabelecimento e comece a transformar sua experiência digital hoje mesmo.
+          </p>
+        </div>
 
-      <div className="mb-8 flex justify-center">
-        <Tabs 
-          defaultValue="mensal" 
-          value={periodo} 
-          onValueChange={(value) => setPeriodo(value as "mensal" | "anual")}
-          className="w-[400px]"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="mensal">Mensal</TabsTrigger>
-            <TabsTrigger value="anual">
-              Anual
-              <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                Até 20% Off
-              </span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+        <div className="mb-8 flex justify-center">
+          <Tabs 
+            defaultValue="mensal" 
+            value={periodo} 
+            onValueChange={(value) => setPeriodo(value as "mensal" | "anual")}
+            className="w-[400px]"
+          >
+            <TabsList className="grid w-full grid-cols-2 bg-white">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-primary data-[state=active]:text-white">Mensal</TabsTrigger>
+              <TabsTrigger value="anual" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                Anual
+                <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                  Até 20% Off
+                </span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {planos.map((plano) => (
-          <Card key={plano.id} className={`relative flex flex-col ${plano.destaque ? 'border-primary shadow-lg' : ''}`}>
-            {plano.destaque && (
-              <div className="absolute -top-3 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground">
-                Mais Popular
-              </div>
-            )}
-            <CardHeader>
-              <CardTitle>{plano.nome}</CardTitle>
-              <CardDescription>{plano.descricao}</CardDescription>
-              <div className="mt-4">
-                <div className="flex items-baseline">
-                  <span className="text-3xl font-bold">
-                    {formatarPreco(plano.preco[periodo])}
-                  </span>
-                  <span className="ml-1 text-muted-foreground">
-                    /{periodo === "mensal" ? "mês" : "ano"}
-                  </span>
+        <div className="grid gap-6 md:grid-cols-3">
+          {planos.map((plano) => (
+            <Card key={plano.id} className={`relative flex flex-col bg-white ${plano.destaque ? 'border-primary shadow-lg' : ''}`}>
+              {plano.destaque && (
+                <div className="absolute -top-3 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-sm font-medium text-white">
+                  Mais Popular
                 </div>
-                {periodo === "anual" && (
-                  <p className="text-sm text-green-600 mt-1">
-                    Economia de {calcularEconomia(plano).valor} ({calcularEconomia(plano).porcentagem}%)
-                  </p>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <RadioGroup value={planoSelecionado || ""} onValueChange={setPlanoSelecionado}>
-                <div className="flex items-center space-x-2 mb-4">
-                  <RadioGroupItem value={plano.id} id={plano.id} />
-                  <Label htmlFor={plano.id}>Selecionar este plano</Label>
+              )}
+              <CardHeader>
+                <CardTitle>{plano.nome}</CardTitle>
+                <CardDescription>{plano.descricao}</CardDescription>
+                <div className="mt-4">
+                  <div className="flex items-baseline">
+                    <span className="text-3xl font-bold">
+                      {formatarPreco(plano.preco[periodo])}
+                    </span>
+                    <span className="ml-1 text-muted-foreground">
+                      /{periodo === "mensal" ? "mês" : "ano"}
+                    </span>
+                  </div>
+                  {periodo === "anual" && (
+                    <p className="text-sm text-green-600 mt-1">
+                      Economia de {calcularEconomia(plano).valor} ({calcularEconomia(plano).porcentagem}%)
+                    </p>
+                  )}
                 </div>
-              </RadioGroup>
-              <ul className="space-y-2 mt-6">
-                {plano.recursos.map((recurso, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="mr-2 h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span>{recurso}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full" 
-                variant={plano.destaque ? "default" : "outline"}
-                onClick={() => {
-                  setPlanoSelecionado(plano.id);
-                  assinarPlano();
-                }}
-              >
-                Assinar Plano
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <RadioGroup value={planoSelecionado || ""} onValueChange={setPlanoSelecionado}>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <RadioGroupItem value={plano.id} id={plano.id} />
+                    <Label htmlFor={plano.id}>Selecionar este plano</Label>
+                  </div>
+                </RadioGroup>
+                <ul className="space-y-2 mt-6">
+                  {plano.recursos.map((recurso, index) => (
+                    <li key={index} className="flex items-start">
+                      <Check className="mr-2 h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{recurso}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className={`w-full ${plano.destaque ? 'bg-primary text-white hover:bg-primary/90' : ''}`}
+                  variant={plano.destaque ? "default" : "outline"}
+                  onClick={() => {
+                    setPlanoSelecionado(plano.id);
+                    assinarPlano();
+                  }}
+                >
+                  Assinar Plano
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-12 rounded-lg border bg-white p-6">
+          <div className="flex items-start space-x-4">
+            <HelpCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="font-medium mb-2">Precisa de ajuda para escolher?</h3>
+              <p className="text-muted-foreground mb-4">
+                Se você não tem certeza sobre qual plano é o ideal para o seu negócio, nossa equipe está pronta para ajudar.
+                Entre em contato conosco e teremos prazer em orientá-lo na escolha do plano mais adequado às suas necessidades.
+              </p>
+              <Button variant="link" className="px-0">
+                Fale com um especialista
               </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      <div className="mt-12 rounded-lg border bg-card p-6">
-        <div className="flex items-start space-x-4">
-          <HelpCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-          <div>
-            <h3 className="font-medium mb-2">Precisa de ajuda para escolher?</h3>
-            <p className="text-muted-foreground mb-4">
-              Se você não tem certeza sobre qual plano é o ideal para o seu negócio, nossa equipe está pronta para ajudar.
-              Entre em contato conosco e teremos prazer em orientá-lo na escolha do plano mais adequado às suas necessidades.
-            </p>
-            <Button variant="link" className="px-0">
-              Fale com um especialista
-            </Button>
+            </div>
           </div>
         </div>
       </div>

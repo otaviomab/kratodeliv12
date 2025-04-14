@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, Plus, Trash2, DollarSign, Info } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, DollarSign, Info, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Category {
   id: string;
@@ -33,6 +34,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   // Estado do formulário
   const [form, setForm] = useState<ProductFormData>({
@@ -115,13 +117,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 };
             }
             setForm(mockProduct);
+            setPreviewImage(mockProduct.imageUrl || null);
           } else {
             // Produto novo - valor inicial
             setForm({
               name: "",
               description: "",
               price: 0,
-              categoryId: mockCategories[0].id, // Seleciona primeira categoria por padrão
+              categoryId: mockCategories[0].id,
               imageUrl: "",
               isActive: true,
               isCustomizable: false,
@@ -140,6 +143,34 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
     loadData();
   }, [params.id, isNewProduct]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("A imagem deve ter no máximo 5MB");
+        return;
+      }
+
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        toast.error("Formato de imagem não suportado");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setPreviewImage(result);
+        setForm(prev => ({ ...prev, imageUrl: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setPreviewImage(null);
+    setForm(prev => ({ ...prev, imageUrl: "" }));
+  };
 
   // Manipuladores de formulário
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -244,21 +275,20 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
       {/* Cabeçalho */}
-      <div className="flex items-center gap-4">
-        <Link href="/admin/menu/products" className="p-2 border rounded-md hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-3xl font-bold">
-          {isNewProduct ? "Novo Produto" : "Editar Produto"}
-        </h1>
-      </div>
+      <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center gap-4">
+          <Link href="/admin/menu/products" className="p-2 border rounded-md hover:bg-muted">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-xl font-semibold">
+            {isNewProduct ? "Novo Produto" : "Editar Produto"}
+          </h1>
+        </div>
 
-      {/* Formulário */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-card rounded-lg border p-6">
-          <h2 className="text-xl font-semibold mb-4">Informações Básicas</h2>
+        {/* Formulário */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
@@ -270,7 +300,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="Nome do produto"
                 required
               />
@@ -285,7 +315,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 name="categoryId"
                 value={form.categoryId}
                 onChange={handleChange}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
                 required
               >
                 {categories.map(category => (
@@ -306,7 +336,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 value={form.description}
                 onChange={handleChange}
                 rows={3}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="Descrição do produto"
               />
             </div>
@@ -325,7 +355,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                   name="price"
                   value={form.price}
                   onChange={handleChange}
-                  className="w-full pl-10 p-2 border rounded-md"
+                  className="w-full pl-10 p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="0,00"
                   step="0.01"
                   min="0"
@@ -335,160 +365,179 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             </div>
             
             <div>
-              <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">
-                URL da Imagem
+              <label className="block text-sm font-medium mb-3">
+                Imagem do Produto
               </label>
-              <input
-                type="text"
-                id="imageUrl"
-                name="imageUrl"
-                value={form.imageUrl}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md"
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
+              <div className="border-2 border-dashed rounded-lg p-4">
+                {previewImage ? (
+                  <div className="relative">
+                    <Image
+                      src={previewImage}
+                      alt="Preview"
+                      width={300}
+                      height={200}
+                      className="w-full h-48 object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer flex flex-col items-center justify-center py-6 px-4">
+                    <Upload className="h-12 w-12 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground text-center mb-1">
+                      Arraste uma imagem ou clique para fazer upload
+                    </p>
+                    <p className="text-xs text-muted-foreground text-center">
+                      PNG, JPG ou WEBP (max. 5MB)
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      className="mt-4 inline-flex items-center px-3 py-1.5 text-sm font-medium border rounded-md hover:bg-[#fcf8f2] transition-colors"
+                    >
+                      Escolher Arquivo
+                    </button>
+                  </label>
+                )}
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-6 mt-6">
-            <label className="flex items-center cursor-pointer">
-              <div className="relative">
+
+            <div className="md:col-span-2 space-y-4">
+              <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  className="sr-only"
+                  id="isActive"
                   name="isActive"
                   checked={form.isActive}
                   onChange={handleCheckboxChange}
+                  className="h-4 w-4 rounded border-gray-300"
                 />
-                <div
-                  className={`block w-10 h-6 rounded-full transition ${
-                    form.isActive ? "bg-green-400" : "bg-gray-300"
-                  }`}
-                ></div>
-                <div
-                  className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform ${
-                    form.isActive ? "translate-x-4" : ""
-                  }`}
-                ></div>
+                <label htmlFor="isActive" className="text-sm">
+                  Produto ativo
+                </label>
               </div>
-              <span className="ml-3 text-sm font-medium">
-                Status: {form.isActive ? "Ativo" : "Inativo"}
-              </span>
-            </label>
-            
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-primary focus:ring-primary"
-                name="isCustomizable"
-                checked={form.isCustomizable}
-                onChange={handleCheckboxChange}
-              />
-              <span className="ml-2 text-sm">Produto customizável</span>
-            </label>
-            
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-primary focus:ring-primary"
-                name="hasAdditions"
-                checked={form.hasAdditions}
-                onChange={handleCheckboxChange}
-              />
-              <span className="ml-2 text-sm">Possui adicionais</span>
-            </label>
-          </div>
-        </div>
-        
-        {/* Seção de adicionais */}
-        {form.hasAdditions && (
-          <div className="bg-card rounded-lg border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Adicionais</h2>
-              <button
-                type="button"
-                onClick={handleAddAdditional}
-                className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Adicionar
-              </button>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isCustomizable"
+                  name="isCustomizable"
+                  checked={form.isCustomizable}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="isCustomizable" className="text-sm">
+                  Produto customizável
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="hasAdditions"
+                  name="hasAdditions"
+                  checked={form.hasAdditions}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="hasAdditions" className="text-sm">
+                  Permitir adicionais
+                </label>
+              </div>
             </div>
-            
-            {form.additionals.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center bg-muted/20 rounded-md">
-                <Info className="h-10 w-10 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Clique em "Adicionar" para incluir adicionais ao produto</p>
+          </div>
+
+          {/* Seção de adicionais */}
+          {form.hasAdditions && (
+            <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Adicionais</h2>
+                <button
+                  type="button"
+                  onClick={handleAddAdditional}
+                  className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-primary text-white hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Adicionar
+                </button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {form.additionals.map((additional) => (
-                  <div key={additional.id} className="flex items-center space-x-3 bg-muted/20 p-3 rounded-md">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Nome do adicional"
-                        value={additional.name}
-                        onChange={(e) => handleAdditionalChange(additional.id, 'name', e.target.value)}
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
-                    <div className="w-32">
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </div>
+              
+              {form.additionals.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center bg-muted/20 rounded-md">
+                  <Info className="h-10 w-10 text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">Clique em "Adicionar" para incluir adicionais ao produto</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {form.additionals.map((additional) => (
+                    <div key={additional.id} className="flex items-center gap-4">
+                      <div className="flex-1">
                         <input
-                          type="number"
-                          placeholder="0,00"
-                          value={additional.price}
-                          onChange={(e) => handleAdditionalChange(additional.id, 'price', e.target.value)}
-                          className="w-full pl-10 p-2 border rounded-md"
-                          step="0.01"
-                          min="0"
+                          type="text"
+                          value={additional.name}
+                          onChange={(e) => handleAdditionalChange(additional.id, 'name', e.target.value)}
+                          className="w-full p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          placeholder="Nome do adicional"
                         />
                       </div>
+                      <div className="w-32">
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <input
+                            type="number"
+                            value={additional.price}
+                            onChange={(e) => handleAdditionalChange(additional.id, 'price', e.target.value)}
+                            className="w-full pl-10 p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            placeholder="0,00"
+                            step="0.01"
+                            min="0"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAdditional(additional.id)}
+                        className="p-2 text-red-600 hover:text-red-700 transition-colors"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAdditional(additional.id)}
-                      className="p-2 text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Botões de ação */}
+          <div className="flex justify-end gap-2">
+            <Link
+              href="/admin/menu/products"
+              className="px-4 py-2 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {isSaving ? "Salvando..." : "Salvar"}
+            </button>
           </div>
-        )}
-        
-        <div className="flex justify-end space-x-2">
-          <Link
-            href="/admin/menu/products"
-            className="px-4 py-2 border rounded-md text-sm"
-          >
-            Cancelar
-          </Link>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
-                Salvando...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Salvar
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 } 

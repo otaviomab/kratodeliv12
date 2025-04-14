@@ -1,16 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Search, 
-  Download, 
-  MoreHorizontal, 
-  Mail, 
-  Phone,
-  ArrowUpDown
-} from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/Button";
+import { MoreHorizontal, Download } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -19,12 +13,11 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Mail,
+  Phone,
+  ArrowUpDown
+} from "lucide-react";
+import Link from "next/link";
 
 // Tipos para dados dos clientes
 interface Cliente {
@@ -128,271 +121,240 @@ const clientesDados: Cliente[] = [
   },
 ];
 
-const estadosCliente = [
-  { label: "Todos", value: "todos" },
-  { label: "Ativos", value: "ativo" },
-  { label: "Inativos", value: "inativo" },
-];
-
-const ordenacoes = [
-  { label: "Mais recentes", value: "recentes" },
-  { label: "Mais antigos", value: "antigos" },
-  { label: "Maior valor gasto", value: "maior_valor" },
-  { label: "Maior número de pedidos", value: "mais_pedidos" },
-  { label: "Nome (A-Z)", value: "nome_asc" },
-  { label: "Nome (Z-A)", value: "nome_desc" },
-];
-
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todos");
-  const [sortOrder, setSortOrder] = useState("recentes");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortField, setSortField] = useState("nome");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
   // Função para filtrar e ordenar clientes
   const getFilteredClientes = () => {
-    let filtered = [...clientesDados];
+    let filtered = clientesDados;
 
-    // Aplicar filtro de pesquisa
+    // Aplicar busca
     if (searchTerm) {
-      const termo = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        cliente => 
-          cliente.nome.toLowerCase().includes(termo) || 
-          cliente.email.toLowerCase().includes(termo) ||
-          cliente.telefone.includes(termo)
+      filtered = filtered.filter(cliente =>
+        cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cliente.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Aplicar filtro de status
-    if (statusFilter !== "todos") {
+    if (statusFilter !== "all") {
       filtered = filtered.filter(cliente => cliente.status === statusFilter);
     }
 
     // Aplicar ordenação
-    switch (sortOrder) {
-      case "recentes":
-        filtered.sort((a, b) => new Date(b.dataCadastro.split('/').reverse().join('-')).getTime() - new Date(a.dataCadastro.split('/').reverse().join('-')).getTime());
-        break;
-      case "antigos":
-        filtered.sort((a, b) => new Date(a.dataCadastro.split('/').reverse().join('-')).getTime() - new Date(b.dataCadastro.split('/').reverse().join('-')).getTime());
-        break;
-      case "maior_valor":
-        filtered.sort((a, b) => b.totalGasto - a.totalGasto);
-        break;
-      case "mais_pedidos":
-        filtered.sort((a, b) => b.totalPedidos - a.totalPedidos);
-        break;
-      case "nome_asc":
-        filtered.sort((a, b) => a.nome.localeCompare(b.nome));
-        break;
-      case "nome_desc":
-        filtered.sort((a, b) => b.nome.localeCompare(a.nome));
-        break;
-      default:
-        break;
-    }
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "nome":
+          comparison = a.nome.localeCompare(b.nome);
+          break;
+        case "contato":
+          comparison = a.email.localeCompare(b.email);
+          break;
+        case "totalPedidos":
+          comparison = a.totalPedidos - b.totalPedidos;
+          break;
+        case "totalGasto":
+          comparison = a.totalGasto - b.totalGasto;
+          break;
+        case "ultimoPedido":
+          comparison = new Date(a.ultimoPedido.split('/').reverse().join('-')).getTime() - 
+                      new Date(b.ultimoPedido.split('/').reverse().join('-')).getTime();
+          break;
+        default:
+          break;
+      }
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
 
     return filtered;
   };
 
   const clientesFiltrados = getFilteredClientes();
 
-  const formatarData = (dataString: string): string => {
-    return dataString; // Já está no formato adequado (DD/MM/YYYY)
-  };
-
-  const formatarValor = (valor: number): string => {
-    return new Intl.NumberFormat('pt-BR', { 
-      style: 'currency', 
-      currency: 'BRL' 
-    }).format(valor);
-  };
-
   return (
-    <div className="container py-10">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
-          <p className="text-muted-foreground">
-            Gerencie e visualize todos os clientes que já realizaram pedidos
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="flex flex-col gap-6 p-6">
+          <div className="flex items-center gap-4">
+            <Input
+              placeholder="Buscar cliente..."
+              className="max-w-xs bg-white"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] bg-white">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectItem value="all" className="bg-white hover:bg-[#fcf8f2]">Todos</SelectItem>
+                <SelectItem value="ativo" className="bg-white hover:bg-[#fcf8f2]">Ativos</SelectItem>
+                <SelectItem value="inativo" className="bg-white hover:bg-[#fcf8f2]">Inativos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="bg-white rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold">Clientes</h1>
+                <p className="text-sm text-muted-foreground/100">
+                  Gerencie e visualize todos os clientes que já realizaram pedidos
+                </p>
+              </div>
+              <Button variant="outline" className="bg-background/100">
+                <Download className="mr-2 h-4 w-4" />
+                Exportar
+              </Button>
+            </div>
 
-      <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar cliente..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Select
-            value={statusFilter}
-            onValueChange={setStatusFilter}
-          >
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              {estadosCliente.map((status) => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={sortOrder}
-            onValueChange={setSortOrder}
-          >
-            <SelectTrigger className="w-full sm:w-52">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              {ordenacoes.map((orden) => (
-                <SelectItem key={orden.value} value={orden.value}>
-                  {orden.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-muted/50 text-left">
-                <th className="px-4 py-3 text-sm font-medium text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    Nome
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-sm font-medium text-muted-foreground">
-                  Contato
-                </th>
-                <th className="px-4 py-3 text-sm font-medium text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    Total Pedidos
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-sm font-medium text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    Total Gasto
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-sm font-medium text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    Último Pedido
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-sm font-medium text-muted-foreground text-right">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientesFiltrados.length > 0 ? (
-                clientesFiltrados.map((cliente) => (
-                  <tr 
-                    key={cliente.id}
-                    className="border-t hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col">
-                        <div className="font-medium">{cliente.nome}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Cliente desde {formatarData(cliente.dataCadastro)}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Mail className="h-3.5 w-3.5 mr-2" />
-                          {cliente.email}
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <Phone className="h-3.5 w-3.5 mr-2" />
-                          {cliente.telefone}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="bg-primary/10 text-primary rounded-full h-8 w-8 flex items-center justify-center">
-                          {cliente.totalPedidos}
-                        </div>
-                        pedidos
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="font-medium">
-                        {formatarValor(cliente.totalGasto)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-sm">
-                        {formatarData(cliente.ultimoPedido)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Abrir menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Ver detalhes</DropdownMenuItem>
-                          <DropdownMenuItem>Ver pedidos</DropdownMenuItem>
-                          <DropdownMenuItem>Enviar mensagem</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            {cliente.status === "ativo" ? "Desativar cliente" : "Ativar cliente"}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    Nenhum cliente encontrado com os filtros aplicados.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="mt-4 flex justify-between items-center text-sm text-muted-foreground">
-        <div>Mostrando {clientesFiltrados.length} de {clientesDados.length} clientes</div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={clientesFiltrados.length === 0}>
-            Anterior
-          </Button>
-          <Button variant="outline" size="sm" disabled={clientesFiltrados.length === 0}>
-            Próximo
-          </Button>
+            <div className="mt-6 rounded-md border bg-background/100">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-muted/100">
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        <Button 
+                          variant="ghost" 
+                          className="flex items-center gap-1 -ml-3 bg-transparent hover:bg-muted/100"
+                          onClick={() => handleSort("nome")}
+                        >
+                          Nome
+                          <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        <Button 
+                          variant="ghost" 
+                          className="flex items-center gap-1 -ml-3 bg-transparent hover:bg-muted/100"
+                          onClick={() => handleSort("contato")}
+                        >
+                          Contato
+                          <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                      </th>
+                      <th className="px-4 py-3 text-center text-sm font-medium">
+                        <Button 
+                          variant="ghost" 
+                          className="flex items-center gap-1 justify-center w-full bg-transparent hover:bg-muted/100"
+                          onClick={() => handleSort("totalPedidos")}
+                        >
+                          Total Pedidos
+                          <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                      </th>
+                      <th className="px-4 py-3 text-center text-sm font-medium">
+                        <Button 
+                          variant="ghost" 
+                          className="flex items-center gap-1 justify-center w-full bg-transparent hover:bg-muted/100"
+                          onClick={() => handleSort("totalGasto")}
+                        >
+                          Total Gasto
+                          <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                      </th>
+                      <th className="px-4 py-3 text-center text-sm font-medium">
+                        <Button 
+                          variant="ghost" 
+                          className="flex items-center gap-1 justify-center w-full bg-transparent hover:bg-muted/100"
+                          onClick={() => handleSort("ultimoPedido")}
+                        >
+                          Último Pedido
+                          <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                      </th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clientesFiltrados.map((cliente) => (
+                      <tr key={cliente.id} className="border-b hover:bg-[#fcf8f2] transition-colors">
+                        <td className="px-4 py-3">
+                          <div>
+                            <div className="font-medium">{cliente.nome}</div>
+                            <div className="text-sm text-muted-foreground/100">
+                              Cliente desde {cliente.dataCadastro}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{cliente.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{cliente.telefone}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="inline-flex items-center justify-center rounded-full bg-orange-100/100 px-2.5 py-0.5 text-sm font-medium text-orange-700">
+                            {cliente.totalPedidos} pedidos
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          R$ {cliente.totalGasto.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-center">{cliente.ultimoPedido}</td>
+                        <td className="px-4 py-3 text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 bg-background/100">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-white w-[160px]">
+                              <DropdownMenuItem className="cursor-pointer hover:bg-[#fcf8f2]">
+                                <Link href={`/admin/customers/${cliente.id}`} className="w-full">
+                                  Ver detalhes
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-[#fcf8f2]">
+                                <Link href={`/admin/customers/${cliente.id}/orders`} className="w-full">
+                                  Ver pedidos
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600 cursor-pointer hover:bg-[#fcf8f2]">
+                                Desativar cliente
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/100">
+                <p className="text-sm text-muted-foreground/100">
+                  Mostrando {clientesFiltrados.length} de {clientesDados.length} clientes
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="bg-background/100">
+                    Anterior
+                  </Button>
+                  <Button variant="outline" size="sm" className="bg-background/100">
+                    Próximo
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

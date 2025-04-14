@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -13,6 +13,7 @@ interface Category {
 }
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
+  const isNewCategory = params.id === "new";
   const [category, setCategory] = useState<Category | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -125,18 +126,20 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-[#fdfaf5]">
       {/* Cabeçalho */}
-      <div className="flex items-center gap-4">
-        <Link href="/admin/menu" className="p-2 border rounded-md hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-3xl font-bold">Editar Categoria</h1>
-      </div>
+      <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center gap-4">
+          <Link href="/admin/menu" className="p-2 border rounded-md hover:bg-muted">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-xl font-semibold">
+            {isNewCategory ? "Nova Categoria" : "Editar Categoria"}
+          </h1>
+        </div>
 
-      {/* Formulário */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-card rounded-lg border p-6">
+        {/* Formulário */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
           <div className="grid grid-cols-1 gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
@@ -148,7 +151,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="Nome da categoria"
                 required
               />
@@ -163,66 +166,47 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                rows={4}
-                className="w-full p-2 border rounded-md"
-                placeholder="Descrição da categoria (opcional)"
+                rows={3}
+                className="w-full p-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Descrição da categoria"
               />
             </div>
-            
-            <div className="flex items-center">
-              <label className="flex items-center cursor-pointer">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={form.isActive}
-                    onChange={handleToggleActive}
-                  />
-                  <div
-                    className={`block w-10 h-6 rounded-full transition ${
-                      form.isActive ? "bg-green-400" : "bg-gray-300"
-                    }`}
-                  ></div>
-                  <div
-                    className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform ${
-                      form.isActive ? "translate-x-4" : ""
-                    }`}
-                  ></div>
-                </div>
-                <span className="ml-3 text-sm font-medium">
-                  Status: {form.isActive ? "Ativo" : "Inativo"}
-                </span>
-              </label>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  name="isActive"
+                  checked={form.isActive}
+                  onChange={handleToggleActive}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="isActive" className="text-sm">
+                  Categoria ativa
+                </label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end space-x-2">
-          <Link
-            href="/admin/menu"
-            className="px-4 py-2 border rounded-md text-sm"
-          >
-            Cancelar
-          </Link>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
-                Salvando...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Salvar
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Botões de ação */}
+          <div className="flex justify-end gap-2">
+            <Link
+              href="/admin/menu"
+              className="px-4 py-2 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {isSaving ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 } 

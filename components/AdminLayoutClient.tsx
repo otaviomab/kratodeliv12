@@ -17,19 +17,19 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   };
 
   return (
-    <div className="min-h-screen bg-[#fdfaf5] dark:bg-background">
+    <div className="min-h-screen bg-[#fdfaf5]">
       {/* Menu móvel para dispositivos pequenos */}
       <MobileMenu isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Sidebar para desktop */}
-      <div className="hidden md:block md:fixed md:inset-y-0 md:z-50 md:w-64 border-r bg-white dark:bg-background">
+      <div className="hidden md:block md:fixed md:inset-y-0 md:z-50 md:w-64 border-r bg-white">
         <AdminSidebar />
       </div>
 
       {/* Conteúdo principal */}
-      <div className="md:ml-64 flex flex-col min-h-screen bg-[#fdfaf5] dark:bg-background">
+      <div className="md:ml-64 flex flex-col min-h-screen bg-[#fdfaf5]">
         <AdminHeader onToggleSidebar={handleToggleSidebar} />
-        <main className="flex-1 p-4 md:p-6 bg-[#fdfaf5] dark:bg-background">
+        <main className="flex-1 p-4 md:p-6 bg-[#fdfaf5]">
           {children}
         </main>
       </div>

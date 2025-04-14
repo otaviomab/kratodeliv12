@@ -618,3 +618,276 @@ Todas as páginas são totalmente responsivas:
 - Spinner animado durante carregamento inicial
 - Feedback visual durante operações assíncronas
 - Desabilitação de botões durante operações
+
+### Atualizações de Estilo - Dashboard
+
+**Propósito**: Padronizar o visual do dashboard com fundo cream e cards brancos.
+
+**Implementação**: 
+- Adicionado fundo cream (`bg-[#fdfaf5]`) ao container principal
+- Cards com fundo branco e sombra suave
+- Botões primários com texto branco para melhor contraste
+- Zonas de entrega com fundo mais claro (`bg-[#fcf8f2]`)
+
+**Páginas Atualizadas**:
+1. Menu
+2. Clientes
+3. Relatórios
+4. Planos
+5. Configurações
+
+**Detalhes das Alterações**:
+- Container Principal: `space-y-6 p-6 bg-[#fdfaf5]`
+- Cards: `bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]`
+- Botões Primários: `bg-primary text-white` (substituindo `text-primary-foreground` para garantir contraste)
+- Zonas de Entrega: `bg-[#fcf8f2] dark:bg-card/80`
+
+**Compatibilidade com Tema Escuro**:
+- Mantida através da classe `dark:bg-card`
+- Cards e elementos de interface adaptam-se automaticamente
+
+### Página de Clientes
+**Propósito**: Gerenciar e visualizar informações dos clientes cadastrados no sistema.
+
+**Implementação**: 
+- Interface com fundo cream (`bg-[#fdfaf5]`) e cards brancos para melhor contraste
+- Busca por nome ou email do cliente
+- Filtro de status (Todos/Ativos/Inativos) com fundo branco sólido
+- Tabela com ordenação dinâmica nos cabeçalhos:
+  - Nome (ordem alfabética)
+  - Contato (ordem alfabética por email)
+  - Total de Pedidos (ordem numérica)
+  - Total Gasto (ordem numérica)
+  - Último Pedido (ordem cronológica)
+
+**Exemplo de Uso**:
+```tsx
+// Ordenação na tabela
+const handleSort = (field: string) => {
+  if (sortField === field) {
+    setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+  } else {
+    setSortField(field);
+    setSortDirection("asc");
+  }
+};
+
+// Uso no cabeçalho
+<Button 
+  variant="ghost" 
+  className="flex items-center gap-1 -ml-3 bg-transparent hover:bg-muted/100"
+  onClick={() => handleSort("nome")}
+>
+  Nome
+  <ArrowUpDown className="h-4 w-4" />
+</Button>
+```
+
+### Página de Relatórios
+**Propósito**: Apresentar métricas e análises do negócio de forma clara e organizada.
+
+**Implementação**:
+- Interface com fundo cream (`bg-[#fdfaf5]`) e cards brancos
+- Seletor de período com fundo branco sólido:
+  - Últimos 7 dias
+  - Últimos 15 dias
+  - Últimos 30 dias
+  - Últimos 90 dias
+- Cards de métricas principais:
+  - Vendas Totais
+  - Pedidos
+  - Ticket Médio
+  - Novos Clientes
+- Tabs para diferentes visualizações:
+  - Vendas
+  - Produtos Populares
+  - Clientes
+
+**Exemplo de Estilo**:
+```tsx
+// Estilo padrão para selects
+<Select value={periodo} onValueChange={setPeriodo}>
+  <SelectTrigger className="w-[180px] bg-white">
+    <SelectValue placeholder="Período" />
+  </SelectTrigger>
+  <SelectContent className="bg-white">
+    <SelectItem className="bg-white hover:bg-[#fcf8f2]">
+      Últimos 7 dias
+    </SelectItem>
+  </SelectContent>
+</Select>
+```
+
+### Padrões de UI
+**Cores**:
+- Fundo principal: `bg-[#fdfaf5]` (cream)
+- Cards e elementos: `bg-white`
+- Hover em items: `hover:bg-[#fcf8f2]`
+
+**Componentes**:
+- Selects sempre com fundo branco sólido
+- Botões de ordenação com ícone `ArrowUpDown`
+- Cards com sombra suave e bordas arredondadas
+
+## Dashboard Admin
+
+### Estilização do Dashboard
+**Propósito**: Padronizar a aparência visual do dashboard administrativo.
+**Implementação**: Utilização de classes Tailwind CSS para criar um design consistente com fundo cream e cards brancos.
+**Padrão Visual**:
+- Fundo principal: `bg-[#fdfaf5]`
+- Cards: Fundo branco com sombras suaves
+- Espaçamento: `space-y-6 p-6`
+- Compatibilidade com modo escuro através de classes `dark:`
+
+### Página de Clientes
+**Propósito**: Exibir e gerenciar informações dos clientes.
+**Implementação**: 
+- Container principal com fundo cream
+- Tabela responsiva com hover effects
+- Cards brancos para conteúdo
+**Exemplo de Classes**:
+```tsx
+<div className="space-y-6 p-6 bg-[#fdfaf5]">
+  <Card className="bg-white">
+    // Conteúdo
+  </Card>
+</div>
+```
+
+### Página de Relatórios
+**Propósito**: Visualizar métricas e dados analíticos.
+**Implementação**:
+- Grid de 4 colunas para métricas
+- Tabs para diferentes categorias (Vendas, Produtos Populares, Clientes)
+- Seletor de período e botão de exportação
+**Melhorias**:
+- Remoção da função `exportReport` não utilizada
+- Correção de tipos TypeScript (de `any[]` para `Record<string, unknown>[]`)
+
+### Página de Planos
+**Propósito**: Gerenciar planos de assinatura.
+**Implementação**:
+- Layout consistente com outras páginas
+- Cards para exibição de planos
+- Remoção da função `assinarPlano` não utilizada
+
+### Página de Configurações
+**Propósito**: Configurações gerais do sistema.
+**Implementação**:
+- Estilização alinhada com o padrão do dashboard
+- Cards brancos para diferentes seções de configuração
+
+## Componentes
+
+### Header
+**Propósito**: Barra de navegação superior do sistema.
+**Modificações**:
+- Remoção do componente ThemeToggle
+- Simplificação do layout mantendo apenas logo e nome "Krato"
+
+## Problemas Conhecidos
+
+### Erros de Acesso Síncrono
+**Descrição**: Avisos de `warnForSyncAccess` em páginas dinâmicas.
+**Localização**:
+- CustomerDetailsPage
+- CustomerOrdersPage
+**Impacto**: Acesso síncrono a parâmetros que deveriam ser acessados de forma assíncrona.
+
+### Erros de Stack Trace
+**Descrição**: Erros relacionados ao processamento de arquivos Next.js.
+**Arquivos Afetados**:
+- console-error.ts
+- use-error-handler.ts
+- intercept-console-error.ts
+- params.browser.dev.ts
+**Causa**: Problemas com arquivos fora do diretório do projeto.
+
+## Configurações
+
+### Layout e Navegação {#configuracoes-layout}
+
+**Propósito**: Organizar o acesso às diferentes configurações do estabelecimento.
+
+**Implementação**: 
+- Layout dividido em duas partes: menu lateral e área de conteúdo
+- Menu lateral com ícones e links para cada seção de configuração
+- Redirecionamento automático para a seção de "Informações Gerais" ao acessar configurações
+- Layout responsivo que se adapta a diferentes tamanhos de tela
+
+**Detalhes Técnicos**:
+- Componente implementado com a diretiva "use client" para permitir o uso do hook usePathname
+- Utilização de shadow e borders para separação visual clara entre áreas
+- Indicação visual da aba atual através de cores diferenciadas
+
+### Informações Gerais {#configuracoes-gerais}
+
+**Propósito**: Gerenciar as informações básicas do estabelecimento, incluindo nome, descrição, contatos e imagens.
+
+**Implementação**:
+- Formulário com campos para todas as informações básicas do estabelecimento
+- Campos para upload de imagem de capa e logotipo
+- Validação de formatos e tamanho das imagens
+- Preview das imagens carregadas com opção de remoção
+
+**Detalhes Técnicos**:
+- Componente de upload de imagem reaproveitável para capa e logotipo
+- Validação de tamanho (máximo 5MB) e formatos aceitos (PNG, JPG, WEBP)
+- Conversão de imagens para base64 para preview
+- Layout responsivo com grid para diferentes tamanhos de tela
+
+### Métodos de Pagamento {#configuracoes-pagamentos}
+
+**Propósito**: Configurar quais métodos de pagamento o estabelecimento aceita, tanto online quanto na entrega.
+
+**Implementação**:
+- Opção para habilitar pagamento online
+- Seção de métodos para pagamento na entrega (dinheiro, cartões, PIX, etc.)
+- Seção de métodos para pagamento online (cartões, PIX, vale refeição, etc.)
+- Botão para salvar as configurações
+
+### Configurações de Entrega {#configuracoes-entrega}
+
+**Propósito**: Gerenciar configurações de entrega, incluindo zonas de entrega, taxas e tempos estimados.
+
+**Implementação**:
+- Layout organizado em dois cards principais: configurações básicas e zonas de entrega
+- Configurações básicas incluem opções para habilitar entrega/retirada e valores mínimos
+- Gerenciamento de zonas de entrega com distâncias, taxas e tempos de entrega
+- Interface para adicionar e remover zonas de entrega
+
+**Detalhes Técnicos**:
+- Layout responsivo com grid para diferentes tamanhos de tela
+- Gerenciamento de estado para múltiplas zonas de entrega
+- Validação de dados antes do envio
+- Feedback ao usuário através de toasts
+
+## Cardápio
+
+### Produtos {#cardapio-produtos}
+
+**Propósito**: Gerenciar produtos do estabelecimento, incluindo criação, edição e remoção.
+
+**Implementação**:
+- Listagem de produtos com opções de filtro e busca
+- Formulários para adicionar e editar produtos
+- Opções para configurar preço, categoria, descrição e imagem
+- Opções para adicionais e customizações
+
+### Upload de Imagens {#cardapio-upload-imagens}
+
+**Propósito**: Facilitar o upload e gerenciamento de imagens para produtos e estabelecimento.
+
+**Implementação**:
+- Componente de upload com suporte a arrastar e soltar (drag and drop)
+- Preview da imagem selecionada
+- Botão para remover imagem
+- Validação de formatos permitidos e tamanho máximo
+
+**Detalhes Técnicos**:
+- Validação de formatos aceitos (PNG, JPG, WEBP)
+- Limite de tamanho de 5MB por imagem
+- Feedback visual durante o processo de upload
+- Conversão para base64 para preview
+- Interface intuitiva com instruções claras para o usuário

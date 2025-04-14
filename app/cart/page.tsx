@@ -82,7 +82,7 @@ export default function CartPage() {
                   className="h-10 w-10 rounded-full object-cover mr-2"
                 />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground mr-2">
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white mr-2">
                   <span className="text-lg font-bold">{mockEstablishment.name.charAt(0)}</span>
                 </div>
               )}

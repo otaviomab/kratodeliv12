@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Filter, Search, FileDown, RefreshCcw } from "lucide-react";
+import { Filter, Search, FileDown, RefreshCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -10,6 +10,12 @@ export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "all",
+    paymentMethod: "all",
+    dateRange: "all"
+  });
 
   // Dados simulados de pedidos
   const mockOrders = [
@@ -88,6 +94,16 @@ export default function OrdersPage() {
       return false;
     }
     
+    // Filtro por status
+    if (filters.status !== "all" && order.status !== filters.status) {
+      return false;
+    }
+
+    // Filtro por método de pagamento
+    if (filters.paymentMethod !== "all" && order.paymentMethod !== filters.paymentMethod) {
+      return false;
+    }
+
     return true;
   });
 
@@ -120,6 +136,13 @@ export default function OrdersPage() {
   const handleExport = () => {
     toast.success("Exportação de pedidos iniciada");
     // Lógica de exportação seria implementada aqui
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   // Função auxiliar para obter o label do status
@@ -186,7 +209,7 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6 p-6">
       {/* Cabeçalho e Filtros */}
-      <div className="bg-white dark:bg-card rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+      <div className="bg-white rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold">Pedidos</h1>
@@ -198,14 +221,14 @@ export default function OrdersPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleRefresh}
-              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
+              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white border border-border/10 hover:bg-muted transition-colors"
             >
               <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
+              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white border border-border/10 hover:bg-muted transition-colors"
             >
               <FileDown className="h-4 w-4 mr-2" />
               Exportar
@@ -221,23 +244,89 @@ export default function OrdersPage() {
               placeholder="Buscar por cliente ou número do pedido..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-md border border-border/10 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full pl-9 pr-4 py-2 rounded-md border border-border/10 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white dark:bg-card border border-border/10 hover:bg-muted transition-colors"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center h-9 px-4 rounded-md text-sm font-medium bg-white border border-border/10 hover:bg-muted transition-colors"
             >
               <Filter className="h-4 w-4 mr-2" />
               Filtros
             </button>
           </div>
         </div>
+
+        {/* Modal de Filtros */}
+        {showFilters && (
+          <div className="mt-4 p-4 border rounded-md bg-[#fdfaf5]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-medium">Filtros</h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange("status", e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border bg-white"
+                >
+                  <option value="all">Todos</option>
+                  <option value="received">Recebido</option>
+                  <option value="preparing">Em preparo</option>
+                  <option value="ready">Pronto</option>
+                  <option value="delivered">Entregue</option>
+                  <option value="canceled">Cancelado</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Forma de Pagamento</label>
+                <select
+                  value={filters.paymentMethod}
+                  onChange={(e) => handleFilterChange("paymentMethod", e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border bg-white"
+                >
+                  <option value="all">Todas</option>
+                  <option value="credit_card">Cartão de Crédito</option>
+                  <option value="debit_card">Cartão de Débito</option>
+                  <option value="pix">PIX</option>
+                  <option value="cash">Dinheiro</option>
+                  <option value="meal_voucher">Vale Refeição</option>
+                  <option value="food_voucher">Vale Alimentação</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Período</label>
+                <select
+                  value={filters.dateRange}
+                  onChange={(e) => handleFilterChange("dateRange", e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border bg-white"
+                >
+                  <option value="all">Todo período</option>
+                  <option value="today">Hoje</option>
+                  <option value="yesterday">Ontem</option>
+                  <option value="week">Últimos 7 dias</option>
+                  <option value="month">Último mês</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Lista de Pedidos */}
-      <div className="bg-white dark:bg-card rounded-lg border border-border/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
+      <div className="bg-white rounded-lg border border-border/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -261,7 +350,7 @@ export default function OrdersPage() {
             </thead>
             <tbody className="divide-y divide-border/10">
               {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-[#fdfaf5] dark:hover:bg-card/80 transition-colors">
+                <tr key={order.id} className="hover:bg-[#fdfaf5] transition-colors">
                   <td className="px-6 py-4">
                     <input
                       type="checkbox"

@@ -49,7 +49,7 @@ const MenuItem = ({ product, onClick, className }: MenuItemProps) => {
         <div className="absolute right-2 bottom-2">
           <button
             type="button"
-            className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+            className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white shadow-md hover:bg-primary/90"
             onClick={(e) => {
               e.stopPropagation();
               onClick(product);
