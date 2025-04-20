@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Store } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -8,23 +9,25 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { login, isLoading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulação de login
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Redirecionamento (em produção usaria uma função real de login e redirecionamento)
-      window.location.href = "/admin/dashboard";
+      await login(email, password);
+      toast.success("Login realizado com sucesso!");
+      router.push("/admin/dashboard");
     } catch (error) {
-      console.error("Erro ao fazer login:", error);
-    } finally {
-      setIsLoading(false);
+      const message = error instanceof Error ? error.message : "Erro ao fazer login";
+      toast.error(message);
     }
   };
   
@@ -59,6 +62,8 @@ export default function LoginPage() {
                     id="email"
                     name="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
                     required
                     className="w-full"
@@ -72,6 +77,8 @@ export default function LoginPage() {
                     id="password"
                     name="password"
                     type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
                     required
                     className="w-full"

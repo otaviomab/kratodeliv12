@@ -109,6 +109,7 @@
 
 ## APIs e Integrações
 - [Appwrite](mdc:#appwrite)
+  - [Autenticação com Appwrite v17](mdc:#autenticacao-appwrite)
 - [Serviços Externos](mdc:#servicos-externos)
 
 ## Deployment
@@ -143,3 +144,15 @@
 - [Informações Gerais](mdc:#configuracoes-gerais)
 - [Métodos de Pagamento](mdc:#configuracoes-pagamentos)
 - [Configurações de Entrega](mdc:#configuracoes-entrega)
+
+## Interface Administrativa
+- [Dashboard](mdc:#dashboard)
+- [Configurações](mdc:#configuracoes)
+- [Header e Navegação](mdc:#header-e-navegacao)
+  - [Menu de Notificações](mdc:#menu-de-notificacoes)
+  - [Menu de Perfil](mdc:#menu-de-perfil)
+  - [Sidebar](mdc:#sidebar)
+
+### Índice
+
+- [Autenticação](documentacao.md#autenticacao)

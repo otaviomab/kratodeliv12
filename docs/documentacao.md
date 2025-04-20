@@ -891,3 +891,162 @@ const handleSort = (field: string) => {
 - Feedback visual durante o processo de upload
 - Conversão para base64 para preview
 - Interface intuitiva com instruções claras para o usuário
+
+## Header e Navegação
+
+### Menu de Notificações
+**Propósito**: Exibir notificações em tempo real para o administrador sobre eventos importantes do sistema.
+
+**Implementação**: 
+- Componente: `components/AdminHeader.tsx`
+- Hook: `components/hooks/useClickOutside.ts`
+
+**Funcionalidades**:
+- Indicador visual de notificações não lidas
+- Menu dropdown com lista de notificações
+- Destaque visual para notificações não lidas
+- Fechamento automático ao clicar fora do menu
+- Exibição de timestamp para cada notificação
+- Mensagem quando não há notificações
+
+### Menu de Perfil
+**Propósito**: Fornecer acesso rápido às configurações de conta e opções do usuário.
+
+**Implementação**: 
+- Componente: `components/AdminHeader.tsx`
+- Hook: `components/hooks/useClickOutside.ts`
+
+**Funcionalidades**:
+- Exibição de nome e email do usuário
+- Avatar com inicial do nome
+- Menu dropdown com opções:
+  - Editar Perfil
+  - Alterar Senha
+  - Configurações
+  - Botão de Sair
+- Feedback visual com toasts para ações
+- Fechamento automático ao clicar fora do menu
+
+**Exemplo de Uso**:
+```tsx
+// Exemplo de notificação
+{
+  id: "1",
+  title: "Novo Pedido",
+  message: "Pedido #1234 foi recebido",
+  time: "Agora mesmo",
+  read: false
+}
+
+// Hook useClickOutside
+useClickOutside(menuRef, () => setMenuOpen(false));
+```
+
+### Sidebar
+**Propósito**: Navegação principal do painel administrativo.
+
+**Implementação**: 
+- Componente: `components/AdminSidebar.tsx`
+
+**Funcionalidades**:
+- Links para todas as seções principais
+- Indicador visual da página atual
+- Responsivo (colapsa em telas menores)
+- Animações suaves de hover e transição
+
+## APIs e Integrações
+
+### Appwrite {#appwrite}
+
+**Propósito**: O Appwrite é utilizado como plataforma de backend para o Cardápio Digital Krato, fornecendo serviços como autenticação, banco de dados, armazenamento e funções serverless.
+
+**Implementação**: 
+- Versão utilizada: v17.0.2
+- SDK integrado com Next.js através de client hooks
+- Principais serviços utilizados: Auth, Databases, Storage, Functions
+
+#### Autenticação com Appwrite v17 {#autenticacao-appwrite}
+
+**Propósito**: Implementação do sistema de autenticação utilizando o Appwrite v17, permitindo registro de usuários, login, gerenciamento de sessões e validação de senhas.
+
+**Implementação**:
+- Arquivos principais: 
+  - `lib/appwrite.ts`: Configuração do cliente Appwrite
+  - `hooks/useAuth.ts`: Context e hook para gerenciar estado de autenticação
+  - `hooks/AuthProvider.tsx`: Provider com lógica de autenticação
+  - `app/layout.tsx`: Integração do AuthProvider no layout principal
+
+**Características principais**:
+- Separação de lógica em client hooks para melhor organização e reutilização
+- Validação personalizada de senha para garantir requisitos de segurança
+- Compatibilidade com Appwrite v17+ usando o método `createEmailPasswordSession`
+- Tratamento de erros amigável ao usuário
+- Multi-tenant para suportar separação de dados por estabelecimento
+
+**Validação de senha**:
+- Mínimo de 8 caracteres
+- Pelo menos 1 letra maiúscula
+- Pelo menos 1 letra minúscula
+- Pelo menos 1 número
+- Pelo menos 1 caractere especial
+
+**Exemplo de uso**:
+
+```typescript
+// Registro de usuário
+const { register, error } = useAuth();
+
+try {
+  await register('email@exemplo.com', 'Senha@123', 'Nome do Usuário', 'telefone');
+} catch (err) {
+  // Tratamento de erro
+}
+
+// Login de usuário
+const { login } = useAuth();
+
+try {
+  await login('email@exemplo.com', 'Senha@123');
+} catch (err) {
+  // Tratamento de erro
+}
+```
+
+**Fluxo de autenticação**:
+1. Usuário insere credenciais no formulário
+2. O hook `useAuth` é utilizado para chamar a função de registro ou login
+3. O AuthProvider valida os dados (especialmente senha no caso de registro)
+4. A requisição é enviada para o Appwrite
+5. Em caso de sucesso, a sessão do usuário é criada e o estado é atualizado
+6. O usuário é redirecionado para a área administrativa
+
+**Observações técnicas**:
+- Na versão 17 do Appwrite, o método correto para login é `createEmailPasswordSession` em vez do antigo `createSession`
+- O cliente Appwrite deve ser configurado apenas com `setEndpoint` e `setProject` para operações do lado do cliente
+- As rotas protegidas utilizam o hook `useAuth` para verificar se o usuário está autenticado
+
+## Funcionalidades
+
+### Autenticação
+
+**Propósito**: Gerencia o login, cadastro e sessão de usuários administrativos da plataforma, além de proteger as rotas administrativas.
+
+**Implementação**:
+- Utiliza o serviço **Appwrite Authentication** para criar contas (`account.create`), gerenciar sessões (`account.createEmailPasswordSession`, `account.deleteSession`, `account.get`) e atualizar preferências (`account.updatePrefs` para salvar o telefone).
+- O estado de autenticação (usuário logado, status de carregamento, erros) é gerenciado globalmente através do React Context API, implementado no `hooks/AuthProvider.tsx` e consumido pelo hook `hooks/useAuth.ts`.
+- As páginas de login (`app/admin/(auth)/login/page.tsx`) e cadastro (`app/admin/(auth)/cadastrar/page.tsx`) utilizam o `useAuth` para interagir com o `AuthProvider`.
+- A proteção de rotas é feita em duas camadas:
+    - **Middleware (`middleware.ts`)**: Verifica se o usuário já está logado (presença de cookie de sessão Appwrite) e o redireciona do `/admin/login` ou `/admin/cadastrar` para o `/admin/dashboard`.
+    - **Client-Side (`components/AdminLayoutClient.tsx`)**: Utiliza o hook `useAuth` para verificar se o usuário está autenticado antes de renderizar o conteúdo das rotas protegidas dentro do layout do dashboard. Se não estiver autenticado (e não estiver carregando), redireciona para `/admin/login`.
+- Os botões de logout na `AdminSidebar` e `AdminHeader` chamam a função `logout` do `useAuth` para encerrar a sessão e redirecionar.
+
+**Arquivos Principais**:
+- `hooks/AuthProvider.tsx`
+- `hooks/useAuth.ts`
+- `lib/appwrite.ts`
+- `app/admin/(auth)/login/page.tsx`
+- `app/admin/(auth)/cadastrar/page.tsx`
+- `middleware.ts`
+- `components/AdminLayoutClient.tsx`
+- `components/AdminSidebar.tsx`
+- `components/AdminHeader.tsx`

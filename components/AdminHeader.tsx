@@ -5,6 +5,7 @@ import { Menu, Bell, Settings, LogOut, User, Key } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { useClickOutside } from "@/components/hooks/useClickOutside";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AdminHeaderProps {
   onToggleSidebar: () => void;
@@ -23,6 +24,7 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const { logout } = useAuth();
   
   useClickOutside(notificationsRef, () => setShowNotifications(false));
   useClickOutside(profileMenuRef, () => setShowProfileMenu(false));
@@ -45,9 +47,13 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
     }
   ];
 
-  const handleLogout = () => {
-    // Implementar lógica de logout aqui
-    toast.success("Logout realizado com sucesso!");
+  const handleLogoutClick = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Erro ao fazer logout (Header):", error);
+      toast.error("Falha ao sair. Tente novamente.");
+    }
   };
 
   const handleChangePassword = () => {
@@ -158,7 +164,7 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                   <div className="border-t border-gray-100 my-1"></div>
                   <button
                     className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 hover:bg-gray-50 text-red-600"
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                   >
                     <LogOut className="h-4 w-4" />
                     Sair

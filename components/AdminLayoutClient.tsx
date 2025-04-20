@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminHeader from "@/components/AdminHeader";
 import MobileMenu from "@/components/MobileMenu";
@@ -9,13 +11,41 @@ interface AdminLayoutClientProps {
   children: ReactNode;
 }
 
+// Componente de Loading simples
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen bg-[#fdfaf5]">
+    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#fe5f02]"></div>
+  </div>
+);
+
 export default function AdminLayoutClient({ children }: AdminLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    // Se não está carregando e não há usuário, redireciona para login
+    if (!isLoading && !user) {
+      router.push("/admin/login");
+    }
+  }, [isLoading, user, router]);
 
   const handleToggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
 
+  // Se ainda está carregando a informação de autenticação, mostra o loading
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+  
+  // Se passou pela verificação e não está carregando, mas ainda não tem usuário 
+  // (pode acontecer brevemente antes do redirect), não renderiza nada ou loading novamente
+  if (!user) {
+     return <LoadingSpinner />; // Ou return null;
+  }
+
+  // Se está autenticado, renderiza o layout normal
   return (
     <div className="min-h-screen bg-[#fdfaf5]">
       {/* Menu móvel para dispositivos pequenos */}
