@@ -4,54 +4,33 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Mail, Phone, MapPin, Calendar } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-
-interface Cliente {
-  id: string;
-  nome: string;
-  email: string;
-  telefone: string;
-  endereco: string;
-  dataCadastro: string;
-  totalPedidos: number;
-  totalGasto: number;
-  ultimoPedido: string;
-  status: string;
-}
+import { CustomerWithStats, getCustomer } from "@/lib/customerService";
+import { formatCurrency } from "@/lib/utils";
+import { useAuthStore } from '@/stores/authStore';
 
 export default function CustomerDetailsPage({ params }: { params: { id: string } }) {
-  const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [cliente, setCliente] = useState<CustomerWithStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { establishment } = useAuthStore();
 
   useEffect(() => {
     const fetchCliente = async () => {
+      if (!establishment?.id) return;
+      
       setIsLoading(true);
       try {
-        // Simulação de carregamento de dados
-        setTimeout(() => {
-          const mockCliente: Cliente = {
-            id: params.id,
-            nome: "João Silva",
-            email: "joao.silva@email.com",
-            telefone: "(11) 98765-4321",
-            endereco: "Rua das Flores, 123 - São Paulo, SP",
-            dataCadastro: "15/03/2023",
-            totalPedidos: 12,
-            totalGasto: 745.90,
-            ultimoPedido: "22/04/2023",
-            status: "ativo"
-          };
-          
-          setCliente(mockCliente);
-          setIsLoading(false);
-        }, 1000);
-      } catch {
+        const customerData = await getCustomer(params.id, establishment.id);
+        setCliente(customerData);
+      } catch (error) {
+        console.error('Erro ao carregar os dados do cliente:', error);
         toast.error("Erro ao carregar os dados do cliente");
+      } finally {
         setIsLoading(false);
       }
     };
 
     fetchCliente();
-  }, [params.id]);
+  }, [params.id, establishment?.id]);
 
   if (isLoading) {
     return (
@@ -74,6 +53,13 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
     );
   }
 
+  // Formatar data no padrão brasileiro
+  const formatDate = (isoDate: string): string => {
+    if (!isoDate) return '-';
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('pt-BR');
+  };
+
   return (
     <div className="space-y-6 p-6 bg-[#fdfaf5]">
       {/* Cabeçalho */}
@@ -83,7 +69,7 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
             <Link href="/admin/customers" className="p-2 border rounded-md hover:bg-muted">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-2xl font-bold">{cliente.nome}</h1>
+            <h1 className="text-2xl font-bold">{cliente.name}</h1>
           </div>
           <div className="flex items-center space-x-3">
             <Link
@@ -106,7 +92,7 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
               <Mail className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p>{cliente.email}</p>
+                <p>{cliente.email || '-'}</p>
               </div>
             </div>
             
@@ -114,7 +100,7 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
               <Phone className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Telefone</p>
-                <p>{cliente.telefone}</p>
+                <p>{cliente.phone}</p>
               </div>
             </div>
             
@@ -122,7 +108,7 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
               <MapPin className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Endereço</p>
-                <p>{cliente.endereco}</p>
+                <p>{cliente.address || 'Não informado'}</p>
               </div>
             </div>
             
@@ -130,7 +116,7 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Cliente desde</p>
-                <p>{cliente.dataCadastro}</p>
+                <p>{formatDate(cliente.createdAt)}</p>
               </div>
             </div>
           </div>
@@ -143,19 +129,19 @@ export default function CustomerDetailsPage({ params }: { params: { id: string }
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 bg-[#fcf8f2] rounded-lg">
               <p className="text-sm text-muted-foreground">Total de Pedidos</p>
-              <p className="text-2xl font-bold">{cliente.totalPedidos}</p>
+              <p className="text-2xl font-bold">{cliente.totalOrders}</p>
             </div>
             
             <div className="p-4 bg-[#fcf8f2] rounded-lg">
               <p className="text-sm text-muted-foreground">Total Gasto</p>
               <p className="text-2xl font-bold">
-                R$ {cliente.totalGasto.toFixed(2)}
+                {formatCurrency(cliente.totalSpent)}
               </p>
             </div>
             
             <div className="p-4 bg-[#fcf8f2] rounded-lg">
               <p className="text-sm text-muted-foreground">Último Pedido</p>
-              <p className="text-2xl font-bold">{cliente.ultimoPedido}</p>
+              <p className="text-2xl font-bold">{formatDate(cliente.lastOrderDate) || 'Nenhum'}</p>
             </div>
             
             <div className="p-4 bg-[#fcf8f2] rounded-lg">

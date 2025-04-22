@@ -123,60 +123,449 @@
   - Entregue: Pedido entregue ao cliente
   - Cancelado: Pedido foi cancelado
 
+## Módulo de Configurações {#configuracoes}
+
+**Propósito**: Permite aos estabelecimentos personalizar diversos aspectos de sua operação, incluindo informações gerais, endereço, horários de funcionamento, configurações de entrega, métodos de pagamento e integrações.
+
+**Implementação**:
+- O módulo foi desenvolvido como uma série de endpoints API separados para facilitar a manutenção
+- Cada endpoint segue um padrão consistente de validação, atualização e resposta
+- Implementado com rotas Next.js API Routes no padrão REST
+- Integração com banco de dados Appwrite para armazenamento persistente
+- Para detalhes completos de cada API, consulte a [Referência de API](docs/api-reference.md#api-do-módulo-de-configurações)
+
+### Informações Gerais {#informacoes-gerais}
+
+**Propósito**: Gerencia informações básicas do estabelecimento como nome, descrição, tipo e contatos.
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/update/route.ts`
+- Funcionalidades:
+  - Atualização de nome, descrição e tipo do estabelecimento
+  - Gerenciamento de números de telefone e WhatsApp
+  - Validação de dados obrigatórios
+  - Suporte para campos opcionais
+
+**Exemplo de Uso**:
+1. Acesse a página de configurações do estabelecimento
+2. Edite as informações gerais no formulário correspondente
+3. Clique em "Salvar" para atualizar os dados
+
+**Validações**:
+- ID do estabelecimento válido
+- Campos opcionais são validados se fornecidos
+
+### Gerenciamento de Endereço {#gerenciamento-endereco}
+
+**Propósito**: Permite configurar e atualizar o endereço físico do estabelecimento.
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/address/route.ts`
+- Funcionalidades:
+  - Atualização completa de informações de endereço
+  - Validação de campos obrigatórios (rua, número, bairro, cidade, estado, CEP)
+  - Suporte para informações complementares e geolocalização
+
+**Validações**:
+- Todos os campos obrigatórios devem ser preenchidos
+- Formatação adequada para CEP
+- Verificação da existência do estabelecimento antes da atualização
+
+### Horários de Funcionamento {#horarios-funcionamento}
+
+**Propósito**: Configura os horários em que o estabelecimento está aberto para atendimento.
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/business-hours/route.ts`
+- Funcionalidades:
+  - Configuração de horários para cada dia da semana
+  - Opção para marcar dias em que o estabelecimento não funciona
+  - Validação de formato de horário (HH:MM)
+  - Verificação automática do status atual (aberto/fechado)
+
+**Validações**:
+- Dias marcados como abertos devem ter horários de abertura e fechamento
+- Formato de hora deve seguir o padrão HH:MM
+- Dias da semana devem ser representados por números de 0 (domingo) a 6 (sábado)
+
+### Configurações de Entrega {#configuracoes-entrega}
+
+**Propósito**: Gerencia as configurações relacionadas ao serviço de entrega do estabelecimento.
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/delivery-settings/route.ts`
+- Funcionalidades:
+  - Ativação/desativação do serviço de entrega
+  - Configuração de valor mínimo para pedidos
+  - Definição de taxa de entrega padrão
+  - Configuração de tempo estimado de entrega
+  - Gerenciamento de zonas de entrega com taxas específicas
+
+**Exemplo de Zonas de Entrega**:
+- Zona 1 (até 2km): Taxa de R$ 5,00
+- Zona 2 (2-5km): Taxa de R$ 8,00
+- Zona 3 (5-10km): Taxa de R$ 12,00
+
+**Validações**:
+- Campo `hasDelivery` é obrigatório
+- Valores numéricos devem ser positivos
+- Zonas de entrega devem conter nome e taxa válida
+
+### Métodos de Pagamento {#metodos-pagamento}
+
+**Propósito**: Configura quais métodos de pagamento são aceitos pelo estabelecimento.
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/payment-methods/route.ts`
+- Funcionalidades:
+  - Seleção de múltiplos métodos de pagamento
+  - Validação contra lista de métodos suportados
+  - Remoção automática de duplicatas
+
+**Métodos Suportados**:
+- Cartão de crédito (`credit_card`)
+- Cartão de débito (`debit_card`)
+- Dinheiro (`cash`)
+- PIX (`pix`)
+- Transferência bancária (`bank_transfer`)
+- Vale-refeição (`meal_voucher`)
+- Vale-alimentação (`food_voucher`)
+
+**Validações**:
+- Cada método deve estar na lista de métodos suportados
+- Remoção automática de métodos duplicados
+- Verificação da existência do estabelecimento antes da atualização
+
+### Integração com WhatsApp {#integracao-whatsapp}
+
+**Propósito**: Configura a integração para envio de notificações via WhatsApp.
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/whatsapp/route.ts`
+- Funcionalidades:
+  - Configuração do número de WhatsApp do estabelecimento
+  - Ativação/desativação de notificações para novos pedidos
+  - Ativação/desativação de notificações para alterações de status
+  - Personalização de mensagens para diferentes eventos
+
+**Exemplo de Mensagens Personalizadas**:
+- Novo pedido: "Olá! Você recebeu um novo pedido #{{orderId}}"
+- Pedido confirmado: "O pedido #{{orderId}} foi confirmado"
+- Pedido pronto: "O pedido #{{orderId}} está pronto para retirada/entrega"
+- Pedido entregue: "O pedido #{{orderId}} foi entregue"
+
+**Validações**:
+- O número de WhatsApp deve seguir um formato válido
+- Pelo menos um tipo de notificação deve estar ativado
+- Verificação da existência do estabelecimento antes da atualização
+
 ## Rotas de API {#rotas-api}
 
-### API de Menu
+### Menu API
 
-**Propósito**: Fornece acesso ao cardápio para o frontend do cliente.
+**Propósito**: Fornecer endpoints para acessar o cardápio digital
 
 **Implementação**:
 
 - Localizada em `app/api/menu/route.ts`
-- Endpoints:
-  - `GET /api/menu`: Retorna todas as categorias e produtos
-  - Suporta filtros por categoria, disponibilidade e termos de busca
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `categories` e `products`
 
-### API de Estabelecimento
+**Endpoints**:
 
-**Propósito**: Fornece dados sobre o estabelecimento.
+- `GET /api/menu?establishmentId={id}` - Retorna o cardápio completo de um estabelecimento
+  - Inclui todas as categorias e produtos ativos
+  - Parâmetros:
+    - `establishmentId` (obrigatório): ID do estabelecimento
+
+### API de Categorias
+
+**Propósito**: Gerencia as categorias do cardápio digital, permitindo operações de CRUD completo.
 
 **Implementação**:
 
-- Localizada em `app/api/establishment/[slug]/route.ts`
-- Endpoints:
-  - `GET /api/establishment/[slug]`: Retorna informações do estabelecimento com base no slug
+- Localizada em `app/api/menu/categories/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `categories`
+
+**Endpoints**:
+
+- `GET /api/menu/categories?establishmentId={id}` - Lista categorias de um estabelecimento
+- `POST /api/menu/categories` - Cria uma nova categoria
+- `PUT /api/menu/categories` - Atualiza uma categoria existente
+- `DELETE /api/menu/categories?id={id}` - Remove uma categoria
+
+### API do Estabelecimento
+
+**Propósito**: Gerencia informações do estabelecimento.
+
+**Implementação**:
+
+- Localizada em `app/api/establishment/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
+
+**Endpoints**:
+
+- `GET /api/establishment?identifier={id}` - Retorna informações de um estabelecimento
+  - Parâmetros:
+    - `identifier` (obrigatório): ID do estabelecimento
 
 ### API de Carrinho
 
-**Propósito**: Gerencia operações relacionadas ao carrinho de compras.
+**Propósito**: Gerencia o carrinho de compras do cliente.
 
 **Implementação**:
 
 - Localizada em `app/api/cart/route.ts`
-- Endpoints:
-  - `GET /api/cart`: Retorna o conteúdo atual do carrinho
-  - `POST /api/cart`: Adiciona um item ao carrinho
-  - `PUT /api/cart`: Atualiza a quantidade de um item
-  - `DELETE /api/cart`: Remove um item ou limpa o carrinho
+- Utiliza cookies no navegador para armazenamento local
+- Funções para adicionar, remover e atualizar itens
 
-### API de Pedidos
+**Endpoints**:
 
-**Propósito**: Gerencia operações relacionadas a pedidos.
+- `POST /api/cart/add` - Adiciona um item ao carrinho
+- `POST /api/cart/remove` - Remove um item do carrinho
+- `POST /api/cart/update` - Atualiza a quantidade de um item
+- `POST /api/cart/clear` - Limpa o carrinho
+
+### API do Módulo de Configurações {#api-configuracoes}
+
+**Propósito**: Gerencia as configurações personalizadas dos estabelecimentos.
+
+#### API de Informações Gerais {#api-informacoes-gerais}
 
 **Implementação**:
+- Localizada em `app/api/establishment/[identifier]/update/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
 
-- Localizada em `app/api/orders/route.ts`
-- Endpoints:
-  - `GET /api/orders`: Retorna pedidos, com opção de filtro por status
-  - `POST /api/orders`: Cria um novo pedido
+**Endpoints**:
+- `PATCH /api/establishment/[identifier]/update` - Atualiza informações gerais do estabelecimento
+  - Parâmetros de URL:
+    - `identifier` (obrigatório): ID do estabelecimento
+  - Corpo da Requisição:
+    - `name` (opcional): Nome do estabelecimento
+    - `description` (opcional): Descrição do estabelecimento
+    - `type` (opcional): Tipo do estabelecimento (restaurante, bar, etc.)
+    - `phone` (opcional): Número de telefone
+    - `whatsapp` (opcional): Número de WhatsApp
+  - Resposta:
+    - Objeto com dados atualizados do estabelecimento
 
-**Atualização de Status**:
+**Exemplo de Uso**:
+```http
+PATCH /api/establishment/123456/update
+Content-Type: application/json
 
-- Localizada em `app/api/orders/status/route.ts`
-- Endpoints:
-  - `PUT /api/orders/status`: Atualiza o status de um pedido existente
+{
+  "name": "Restaurante Exemplo",
+  "description": "Especializado em comida italiana",
+  "type": "restaurant",
+  "phone": "11999887766",
+  "whatsapp": "11999887766"
+}
+```
 
-# Documentação do Cardápio Digital Krato
+#### API de Endereço {#api-endereco}
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/address/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
+
+**Endpoints**:
+- `PATCH /api/establishment/[identifier]/address` - Atualiza endereço do estabelecimento
+  - Parâmetros de URL:
+    - `identifier` (obrigatório): ID do estabelecimento
+  - Corpo da Requisição:
+    - `street` (obrigatório): Nome da rua
+    - `number` (obrigatório): Número
+    - `complement` (opcional): Complemento
+    - `neighborhood` (obrigatório): Bairro
+    - `city` (obrigatório): Cidade
+    - `state` (obrigatório): Estado
+    - `zipCode` (obrigatório): CEP
+  - Resposta:
+    - Objeto com dados atualizados do estabelecimento
+
+**Exemplo de Uso**:
+```http
+PATCH /api/establishment/123456/address
+Content-Type: application/json
+
+{
+  "street": "Rua Exemplo",
+  "number": "123",
+  "complement": "Sala 101",
+  "neighborhood": "Centro",
+  "city": "São Paulo",
+  "state": "SP",
+  "zipCode": "01234-567"
+}
+```
+
+#### API de Horários de Funcionamento {#api-horarios}
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/business-hours/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
+
+**Endpoints**:
+- `PATCH /api/establishment/[identifier]/business-hours` - Atualiza horários de funcionamento
+  - Parâmetros de URL:
+    - `identifier` (obrigatório): ID do estabelecimento
+  - Corpo da Requisição:
+    - Array de objetos com horários para cada dia da semana:
+      - `day` (obrigatório): Número do dia da semana (0-6, sendo 0=domingo)
+      - `isOpen` (obrigatório): Indica se está aberto neste dia
+      - `openTime` (condicional): Horário de abertura (obrigatório se isOpen=true)
+      - `closeTime` (condicional): Horário de fechamento (obrigatório se isOpen=true)
+  - Resposta:
+    - Objeto com dados atualizados do estabelecimento
+
+**Exemplo de Uso**:
+```http
+PATCH /api/establishment/123456/business-hours
+Content-Type: application/json
+
+[
+  {
+    "day": 0,
+    "isOpen": false
+  },
+  {
+    "day": 1,
+    "isOpen": true,
+    "openTime": "10:00",
+    "closeTime": "22:00"
+  },
+  {
+    "day": 2,
+    "isOpen": true,
+    "openTime": "10:00",
+    "closeTime": "22:00"
+  }
+]
+```
+
+#### API de Configurações de Entrega {#api-entrega}
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/delivery-settings/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
+
+**Endpoints**:
+- `PATCH /api/establishment/[identifier]/delivery-settings` - Atualiza configurações de entrega
+  - Parâmetros de URL:
+    - `identifier` (obrigatório): ID do estabelecimento
+  - Corpo da Requisição:
+    - `isDeliveryEnabled` (obrigatório): Indica se o serviço de entrega está ativo
+    - `minimumOrderValue` (opcional): Valor mínimo para pedidos com entrega
+    - `defaultDeliveryFee` (opcional): Taxa de entrega padrão
+    - `estimatedDeliveryTime` (opcional): Tempo estimado de entrega em minutos
+    - `deliveryZones` (opcional): Array de zonas de entrega com taxas específicas
+  - Resposta:
+    - Objeto com dados atualizados do estabelecimento
+
+**Exemplo de Uso**:
+```http
+PATCH /api/establishment/123456/delivery-settings
+Content-Type: application/json
+
+{
+  "isDeliveryEnabled": true,
+  "minimumOrderValue": 20.00,
+  "defaultDeliveryFee": 5.00,
+  "estimatedDeliveryTime": 45,
+  "deliveryZones": [
+    {
+      "name": "Zona 1",
+      "radius": 2,
+      "fee": 5.00
+    },
+    {
+      "name": "Zona 2",
+      "radius": 5,
+      "fee": 8.00
+    }
+  ]
+}
+```
+
+#### API de Métodos de Pagamento {#api-pagamentos}
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/payment-methods/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
+
+**Endpoints**:
+- `PATCH /api/establishment/[identifier]/payment-methods` - Atualiza métodos de pagamento aceitos
+  - Parâmetros de URL:
+    - `identifier` (obrigatório): ID do estabelecimento
+  - Corpo da Requisição:
+    - Array de strings com métodos de pagamento
+  - Resposta:
+    - Objeto com dados atualizados do estabelecimento
+
+**Exemplo de Uso**:
+```http
+PATCH /api/establishment/123456/payment-methods
+Content-Type: application/json
+
+[
+  "creditCard",
+  "debitCard",
+  "cash",
+  "pix"
+]
+```
+
+#### API de Integração com WhatsApp {#api-whatsapp}
+
+**Implementação**:
+- Localizada em `app/api/establishment/[identifier]/whatsapp/route.ts`
+- Utiliza o Appwrite Database como backend
+- Database ID: `kratodeliv_db`
+- Collection ID: `establishments`
+
+**Endpoints**:
+- `PATCH /api/establishment/[identifier]/whatsapp` - Configura integração com WhatsApp
+  - Parâmetros de URL:
+    - `identifier` (obrigatório): ID do estabelecimento
+  - Corpo da Requisição:
+    - `whatsappNumber` (obrigatório): Número de WhatsApp para receber notificações
+    - `notifyNewOrders` (opcional): Notifica sobre novos pedidos
+    - `notifyStatusChanges` (opcional): Notifica sobre mudanças de status
+    - `customMessages` (opcional): Mensagens personalizadas para diferentes eventos
+  - Resposta:
+    - Objeto com dados atualizados do estabelecimento
+
+**Exemplo de Uso**:
+```http
+PATCH /api/establishment/123456/whatsapp
+Content-Type: application/json
+
+{
+  "whatsappNumber": "5511999887766",
+  "notifyNewOrders": true,
+  "notifyStatusChanges": true,
+  "customMessages": {
+    "newOrder": "Olá! Você recebeu um novo pedido #{{orderId}}",
+    "orderReady": "O pedido #{{orderId}} está pronto para retirada/entrega"
+  }
+}
+```
 
 ## Arquitetura <a id="arquitetura"></a>
 
@@ -729,324 +1118,1076 @@ const handleSort = (field: string) => {
 - Botões de ordenação com ícone `ArrowUpDown`
 - Cards com sombra suave e bordas arredondadas
 
-## Dashboard Admin
+## Módulo de Relatórios {#modulo-relatorios}
 
-### Estilização do Dashboard
-**Propósito**: Padronizar a aparência visual do dashboard administrativo.
-**Implementação**: Utilização de classes Tailwind CSS para criar um design consistente com fundo cream e cards brancos.
-**Padrão Visual**:
-- Fundo principal: `bg-[#fdfaf5]`
-- Cards: Fundo branco com sombras suaves
-- Espaçamento: `space-y-6 p-6`
-- Compatibilidade com modo escuro através de classes `dark:`
-
-### Página de Clientes
-**Propósito**: Exibir e gerenciar informações dos clientes.
-**Implementação**: 
-- Container principal com fundo cream
-- Tabela responsiva com hover effects
-- Cards brancos para conteúdo
-**Exemplo de Classes**:
-```tsx
-<div className="space-y-6 p-6 bg-[#fdfaf5]">
-  <Card className="bg-white">
-    // Conteúdo
-  </Card>
-</div>
-```
-
-### Página de Relatórios
-**Propósito**: Visualizar métricas e dados analíticos.
-**Implementação**:
-- Grid de 4 colunas para métricas
-- Tabs para diferentes categorias (Vendas, Produtos Populares, Clientes)
-- Seletor de período e botão de exportação
-**Melhorias**:
-- Remoção da função `exportReport` não utilizada
-- Correção de tipos TypeScript (de `any[]` para `Record<string, unknown>[]`)
-
-### Página de Planos
-**Propósito**: Gerenciar planos de assinatura.
-**Implementação**:
-- Layout consistente com outras páginas
-- Cards para exibição de planos
-- Remoção da função `assinarPlano` não utilizada
-
-### Página de Configurações
-**Propósito**: Configurações gerais do sistema.
-**Implementação**:
-- Estilização alinhada com o padrão do dashboard
-- Cards brancos para diferentes seções de configuração
-
-## Componentes
-
-### Header
-**Propósito**: Barra de navegação superior do sistema.
-**Modificações**:
-- Remoção do componente ThemeToggle
-- Simplificação do layout mantendo apenas logo e nome "Krato"
-
-## Problemas Conhecidos
-
-### Erros de Acesso Síncrono
-**Descrição**: Avisos de `warnForSyncAccess` em páginas dinâmicas.
-**Localização**:
-- CustomerDetailsPage
-- CustomerOrdersPage
-**Impacto**: Acesso síncrono a parâmetros que deveriam ser acessados de forma assíncrona.
-
-### Erros de Stack Trace
-**Descrição**: Erros relacionados ao processamento de arquivos Next.js.
-**Arquivos Afetados**:
-- console-error.ts
-- use-error-handler.ts
-- intercept-console-error.ts
-- params.browser.dev.ts
-**Causa**: Problemas com arquivos fora do diretório do projeto.
-
-## Configurações
-
-### Layout e Navegação {#configuracoes-layout}
-
-**Propósito**: Organizar o acesso às diferentes configurações do estabelecimento.
+**Propósito**: Fornece funcionalidades avançadas para geração de relatórios e análise de desempenho do estabelecimento, incluindo relatórios de vendas, produtos mais vendidos, faturamento e estatísticas comparativas.
 
 **Implementação**: 
-- Layout dividido em duas partes: menu lateral e área de conteúdo
-- Menu lateral com ícones e links para cada seção de configuração
-- Redirecionamento automático para a seção de "Informações Gerais" ao acessar configurações
-- Layout responsivo que se adapta a diferentes tamanhos de tela
+- Implementado através do serviço `ReportService` em `lib/reportService.ts`
+- Utiliza consultas otimizadas ao banco de dados Appwrite para extrair e processar métricas relevantes
+- Suporta comparação entre períodos para análise de tendências
+- Implementa formatação e agregação de dados para diferentes visualizações (diária, semanal, mensal)
 
-**Detalhes Técnicos**:
-- Componente implementado com a diretiva "use client" para permitir o uso do hook usePathname
-- Utilização de shadow e borders para separação visual clara entre áreas
-- Indicação visual da aba atual através de cores diferenciadas
+### Relatório de Vendas por Período {#relatorio-vendas}
 
-### Informações Gerais {#configuracoes-gerais}
-
-**Propósito**: Gerenciar as informações básicas do estabelecimento, incluindo nome, descrição, contatos e imagens.
+**Propósito**: Gera um relatório detalhado de vendas em um período específico com opções de agrupamento.
 
 **Implementação**:
-- Formulário com campos para todas as informações básicas do estabelecimento
-- Campos para upload de imagem de capa e logotipo
-- Validação de formatos e tamanho das imagens
-- Preview das imagens carregadas com opção de remoção
-
-**Detalhes Técnicos**:
-- Componente de upload de imagem reaproveitável para capa e logotipo
-- Validação de tamanho (máximo 5MB) e formatos aceitos (PNG, JPG, WEBP)
-- Conversão de imagens para base64 para preview
-- Layout responsivo com grid para diferentes tamanhos de tela
-
-### Métodos de Pagamento {#configuracoes-pagamentos}
-
-**Propósito**: Configurar quais métodos de pagamento o estabelecimento aceita, tanto online quanto na entrega.
-
-**Implementação**:
-- Opção para habilitar pagamento online
-- Seção de métodos para pagamento na entrega (dinheiro, cartões, PIX, etc.)
-- Seção de métodos para pagamento online (cartões, PIX, vale refeição, etc.)
-- Botão para salvar as configurações
-
-### Configurações de Entrega {#configuracoes-entrega}
-
-**Propósito**: Gerenciar configurações de entrega, incluindo zonas de entrega, taxas e tempos estimados.
-
-**Implementação**:
-- Layout organizado em dois cards principais: configurações básicas e zonas de entrega
-- Configurações básicas incluem opções para habilitar entrega/retirada e valores mínimos
-- Gerenciamento de zonas de entrega com distâncias, taxas e tempos de entrega
-- Interface para adicionar e remover zonas de entrega
-
-**Detalhes Técnicos**:
-- Layout responsivo com grid para diferentes tamanhos de tela
-- Gerenciamento de estado para múltiplas zonas de entrega
-- Validação de dados antes do envio
-- Feedback ao usuário através de toasts
-
-## Cardápio
-
-### Produtos {#cardapio-produtos}
-
-**Propósito**: Gerenciar produtos do estabelecimento, incluindo criação, edição e remoção.
-
-**Implementação**:
-- Listagem de produtos com opções de filtro e busca
-- Formulários para adicionar e editar produtos
-- Opções para configurar preço, categoria, descrição e imagem
-- Opções para adicionais e customizações
-
-### Upload de Imagens {#cardapio-upload-imagens}
-
-**Propósito**: Facilitar o upload e gerenciamento de imagens para produtos e estabelecimento.
-
-**Implementação**:
-- Componente de upload com suporte a arrastar e soltar (drag and drop)
-- Preview da imagem selecionada
-- Botão para remover imagem
-- Validação de formatos permitidos e tamanho máximo
-
-**Detalhes Técnicos**:
-- Validação de formatos aceitos (PNG, JPG, WEBP)
-- Limite de tamanho de 5MB por imagem
-- Feedback visual durante o processo de upload
-- Conversão para base64 para preview
-- Interface intuitiva com instruções claras para o usuário
-
-## Header e Navegação
-
-### Menu de Notificações
-**Propósito**: Exibir notificações em tempo real para o administrador sobre eventos importantes do sistema.
-
-**Implementação**: 
-- Componente: `components/AdminHeader.tsx`
-- Hook: `components/hooks/useClickOutside.ts`
-
-**Funcionalidades**:
-- Indicador visual de notificações não lidas
-- Menu dropdown com lista de notificações
-- Destaque visual para notificações não lidas
-- Fechamento automático ao clicar fora do menu
-- Exibição de timestamp para cada notificação
-- Mensagem quando não há notificações
-
-### Menu de Perfil
-**Propósito**: Fornecer acesso rápido às configurações de conta e opções do usuário.
-
-**Implementação**: 
-- Componente: `components/AdminHeader.tsx`
-- Hook: `components/hooks/useClickOutside.ts`
-
-**Funcionalidades**:
-- Exibição de nome e email do usuário
-- Avatar com inicial do nome
-- Menu dropdown com opções:
-  - Editar Perfil
-  - Alterar Senha
-  - Configurações
-  - Botão de Sair
-- Feedback visual com toasts para ações
-- Fechamento automático ao clicar fora do menu
+- Método `ReportService.generateSalesReport()`
+- Funcionalidades:
+  - Agrupamento por dia, semana ou mês
+  - Cálculo de total de vendas no período
+  - Contagem de pedidos e ticket médio
+  - Distribuição de vendas por método de pagamento
+  - Contagem de pedidos por status
 
 **Exemplo de Uso**:
-```tsx
-// Exemplo de notificação
-{
-  id: "1",
-  title: "Novo Pedido",
-  message: "Pedido #1234 foi recebido",
-  time: "Agora mesmo",
-  read: false
-}
+```typescript
+// Gerar relatório de vendas dos últimos 30 dias
+const startDate = new Date();
+startDate.setDate(startDate.getDate() - 30);
+const endDate = new Date();
 
-// Hook useClickOutside
-useClickOutside(menuRef, () => setMenuOpen(false));
+const salesReport = await ReportService.generateSalesReport(
+  'establishmentId123',
+  startDate.toISOString(),
+  endDate.toISOString(),
+  'day' // Agrupamento diário
+);
+
+console.log(`Total de vendas: R$ ${salesReport.totalSales}`);
+console.log(`Quantidade de pedidos: ${salesReport.orderCount}`);
+console.log(`Ticket médio: R$ ${salesReport.averageTicket}`);
 ```
 
-### Sidebar
-**Propósito**: Navegação principal do painel administrativo.
+**Tratamento de Erros**:
+- Validação de parâmetros de data
+- Tratamento de erros de consulta ao banco de dados
+- Resposta estruturada em caso de falha
 
-**Implementação**: 
-- Componente: `components/AdminSidebar.tsx`
+### Produtos Mais Vendidos {#produtos-mais-vendidos}
 
-**Funcionalidades**:
-- Links para todas as seções principais
-- Indicador visual da página atual
-- Responsivo (colapsa em telas menores)
-- Animações suaves de hover e transição
-
-## APIs e Integrações
-
-### Appwrite {#appwrite}
-
-**Propósito**: O Appwrite é utilizado como plataforma de backend para o Cardápio Digital Krato, fornecendo serviços como autenticação, banco de dados, armazenamento e funções serverless.
-
-**Implementação**: 
-- Versão utilizada: v17.0.2
-- SDK integrado com Next.js através de client hooks
-- Principais serviços utilizados: Auth, Databases, Storage, Functions
-
-#### Autenticação com Appwrite v17 {#autenticacao-appwrite}
-
-**Propósito**: Implementação do sistema de autenticação utilizando o Appwrite v17, permitindo registro de usuários, login, gerenciamento de sessões e validação de senhas.
+**Propósito**: Identifica e analisa os produtos com maior volume de vendas em um período específico.
 
 **Implementação**:
-- Arquivos principais: 
-  - `lib/appwrite.ts`: Configuração do cliente Appwrite
-  - `hooks/useAuth.ts`: Context e hook para gerenciar estado de autenticação
-  - `hooks/AuthProvider.tsx`: Provider com lógica de autenticação
-  - `app/layout.tsx`: Integração do AuthProvider no layout principal
+- Método `ReportService.listTopProducts()`
+- Funcionalidades:
+  - Listagem de produtos ordenados por quantidade vendida
+  - Cálculo de receita gerada por cada produto
+  - Opção para limitar a quantidade de produtos retornados
+  - Exclusão automática de pedidos cancelados da análise
 
-**Características principais**:
-- Separação de lógica em client hooks para melhor organização e reutilização
-- Validação personalizada de senha para garantir requisitos de segurança
-- Compatibilidade com Appwrite v17+ usando o método `createEmailPasswordSession`
-- Tratamento de erros amigável ao usuário
-- Multi-tenant para suportar separação de dados por estabelecimento
+**Exemplo de Uso**:
+```typescript
+// Listar os 5 produtos mais vendidos do mês atual
+const startDate = new Date();
+startDate.setDate(1); // Primeiro dia do mês
+const endDate = new Date();
 
-**Validação de senha**:
-- Mínimo de 8 caracteres
-- Pelo menos 1 letra maiúscula
-- Pelo menos 1 letra minúscula
-- Pelo menos 1 número
-- Pelo menos 1 caractere especial
+const topProducts = await ReportService.listTopProducts(
+  'establishmentId123',
+  startDate.toISOString(),
+  endDate.toISOString(),
+  5 // Limitar aos 5 mais vendidos
+);
 
-**Exemplo de uso**:
+console.log(`Total de produtos vendidos: ${topProducts.totalQuantity}`);
+console.log(`Receita total: R$ ${topProducts.totalRevenue}`);
+
+// Listar os produtos
+topProducts.products.forEach((product, index) => {
+  console.log(`${index + 1}. ${product.name}: ${product.quantity} unidades - R$ ${product.revenue}`);
+});
+```
+
+**Validações**:
+- Verificação da existência do estabelecimento
+- Validação de datas (início e fim)
+- Limite de produtos deve ser um número positivo
+
+### Faturamento por Período {#faturamento-periodo}
+
+**Propósito**: Calcula e analisa o faturamento em um período específico, com comparação opcional com período anterior.
+
+**Implementação**:
+- Método `ReportService.calculateRevenue()`
+- Funcionalidades:
+  - Cálculo de faturamento total no período selecionado
+  - Distribuição de faturamento por data, dia da semana e mês
+  - Comparação automática com período anterior de mesma duração
+  - Cálculo de percentual de crescimento ou queda
+  - Indicação de tendência (crescimento, queda ou estabilidade)
+
+**Exemplo de Uso**:
+```typescript
+// Calcular faturamento do último trimestre com comparação
+const startDate = new Date();
+startDate.setMonth(startDate.getMonth() - 3);
+const endDate = new Date();
+
+const revenueReport = await ReportService.calculateRevenue(
+  'establishmentId123',
+  startDate.toISOString(),
+  endDate.toISOString(),
+  true // Comparar com período anterior
+);
+
+console.log(`Faturamento total: R$ ${revenueReport.total}`);
+console.log(`Crescimento: ${revenueReport.growth.percentageFromPreviousPeriod.toFixed(2)}%`);
+console.log(`Tendência: ${revenueReport.growth.trend}`);
+
+// Analisar vendas por dia da semana
+Object.entries(revenueReport.byWeekday).forEach(([day, value]) => {
+  console.log(`${day}: R$ ${value}`);
+});
+```
+
+### Cálculo de Ticket Médio {#calculo-ticket-medio}
+
+**Propósito**: Calcula o valor médio dos pedidos em um período específico e compara com o período anterior.
+
+**Implementação**:
+- Método `ReportService.calculateAverageTicket()`
+- Funcionalidades:
+  - Cálculo preciso do ticket médio no período atual
+  - Cálculo do ticket médio no período anterior de mesma duração
+  - Análise de variação percentual
+  - Indicação de tendência (aumento, diminuição ou estabilidade)
+
+**Exemplo de Uso**:
+```typescript
+// Calcular o ticket médio dos últimos 7 dias
+const startDate = new Date();
+startDate.setDate(startDate.getDate() - 7);
+const endDate = new Date();
+
+const ticketReport = await ReportService.calculateAverageTicket(
+  'establishmentId123',
+  startDate.toISOString(),
+  endDate.toISOString()
+);
+
+console.log(`Ticket médio atual: R$ ${ticketReport.currentPeriod.toFixed(2)}`);
+console.log(`Ticket médio anterior: R$ ${ticketReport.previousPeriod.toFixed(2)}`);
+console.log(`Variação: ${ticketReport.percentageChange.toFixed(2)}%`);
+console.log(`Tendência: ${ticketReport.trend}`);
+```
+
+### Estatísticas de Desempenho {#estatisticas-desempenho}
+
+**Propósito**: Gera um conjunto completo de estatísticas de desempenho para diferentes períodos (diário, semanal, mensal ou anual).
+
+**Implementação**:
+- Método `ReportService.generatePerformanceStats()`
+- Funcionalidades:
+  - Análise completa de faturamento, pedidos e ticket médio
+  - Identificação dos 5 produtos mais vendidos no período
+  - Distribuição de vendas por dia da semana
+  - Comparação automática com o período equivalente anterior
+  - Cálculo de variações percentuais para todas as métricas
+
+**Exemplo de Uso**:
+```typescript
+// Gerar estatísticas de desempenho mensal
+const stats = await ReportService.generatePerformanceStats(
+  'establishmentId123',
+  'monthly', // Análise mensal (outras opções: daily, weekly, yearly)
+  true // Comparar com período anterior
+);
+
+console.log('=== FATURAMENTO ===');
+console.log(`Atual: R$ ${stats.revenue.current}`);
+console.log(`Anterior: R$ ${stats.revenue.previous}`);
+console.log(`Variação: ${stats.revenue.percentageChange.toFixed(2)}%`);
+
+console.log('=== PEDIDOS ===');
+console.log(`Atual: ${stats.orders.current}`);
+console.log(`Anterior: ${stats.orders.previous}`);
+console.log(`Variação: ${stats.orders.percentageChange.toFixed(2)}%`);
+
+console.log('=== TICKET MÉDIO ===');
+console.log(`Atual: R$ ${stats.averageTicket.current.toFixed(2)}`);
+console.log(`Anterior: R$ ${stats.averageTicket.previous.toFixed(2)}`);
+console.log(`Variação: ${stats.averageTicket.percentageChange.toFixed(2)}%`);
+
+console.log('=== TOP 5 PRODUTOS ===');
+stats.topProducts.forEach((product, index) => {
+  console.log(`${index + 1}. ${product.name}: ${product.quantity} unidades - R$ ${product.revenue}`);
+});
+```
+
+**Validações**:
+- Validação do ID do estabelecimento
+- Verificação do tipo de período (daily, weekly, monthly, yearly)
+- Tratamento adequado para períodos sem dados anteriores
+
+### Interfaces e Tipos {#relatorios-interfaces}
+
+O módulo define tipos TypeScript claros para todas as respostas:
+
+**SalesReport**: Relatório de vendas por período
+```typescript
+interface SalesReport {
+  totalSales: number;
+  orderCount: number;
+  averageTicket: number;
+  salesByDate: Record<string, number>;
+  salesByPaymentMethod: Record<string, number>;
+  salesByStatus: Record<string, number>;
+}
+```
+
+**TopProductsReport**: Relatório de produtos mais vendidos
+```typescript
+interface TopProductsReport {
+  products: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    revenue: number;
+  }>;
+  totalQuantity: number;
+  totalRevenue: number;
+}
+```
+
+**RevenueReport**: Relatório de faturamento por período
+```typescript
+interface RevenueReport {
+  total: number;
+  byDate: Record<string, number>;
+  byWeekday: Record<string, number>;
+  byMonth: Record<string, number>;
+  growth: {
+    percentageFromPreviousPeriod: number;
+    trend: 'up' | 'down' | 'stable';
+  };
+}
+```
+
+### Considerações de Desempenho {#relatorios-desempenho}
+
+O módulo foi projetado considerando as melhores práticas para otimização de desempenho:
+
+- Uso de queries otimizadas ao banco de dados Appwrite
+- Processamento em lote para grandes volumes de dados
+- Exclusão automática de pedidos cancelados das análises
+- Reutilização de cálculos intermediários para reduzir processamento redundante
+- Implementação de limite alto (100.000) para garantir a recuperação de todos os dados relevantes
+
+### Tratamento de Erros {#relatorios-tratamento-erros}
+
+O módulo implementa tratamento robusto de erros:
+
+- Validação de parâmetros antes da execução
+- Captura e log adequado de exceções
+- Mensagens de erro descritivas para facilitar a depuração
+- Fallbacks seguros para casos onde dados anteriores não estão disponíveis
+
+O módulo de Relatórios fornece uma base sólida para análise de dados e tomada de decisões baseada em métricas reais, permitindo que os estabelecimentos compreendam melhor seu desempenho e identifiquem oportunidades de melhoria.
+
+## Módulo de Planos de Assinatura {#modulo-planos}
+
+**Propósito**: Implementa um sistema de planos de assinatura que define diferentes níveis de acesso e limitações para os estabelecimentos, permitindo que o sistema tenha diferentes tiers de serviço (Básico, Profissional e Premium).
+
+**Implementação**: 
+- Desenvolvido usando Appwrite Database para armazenar planos e assinaturas
+- Implementado com APIs RESTful para gerenciar assinaturas
+- Sistema de verificação de acesso a recursos baseado no plano
+- Middleware para limitar acesso a recursos não disponíveis no plano atual
+- Hook React para uso no frontend
+
+### Planos Disponíveis {#planos-disponiveis}
+
+O sistema oferece três planos de assinatura com diferentes recursos e limitações:
+
+#### Plano Básico
+
+**Propósito**: Fornece funcionalidades essenciais para estabelecimentos pequenos que estão começando.
+
+**Implementação**:
+- ID: `basic_plan`
+- Preço: R$ 49,90/mês ou R$ 479,90/ano
+- Recursos incluídos:
+  - Cardápio digital personalizado
+  - Gerenciamento de pedidos
+  - Até 50 produtos cadastrados
+  - Relatórios básicos
+  - Suporte por e-mail
+
+#### Plano Profissional
+
+**Propósito**: Oferece mais recursos para estabelecimentos em crescimento que precisam de funcionalidades avançadas.
+
+**Implementação**:
+- ID: `professional_plan`
+- Preço: R$ 89,90/mês ou R$ 863,90/ano
+- Recursos incluídos:
+  - Todos os recursos do plano Básico
+  - Até 150 produtos cadastrados
+  - Gestão de múltiplos estabelecimentos
+  - Sistema de delivery integrado
+  - Relatórios avançados
+  - Suporte prioritário
+  - Integração com sistemas de pagamento
+
+#### Plano Premium
+
+**Propósito**: Fornece solução completa para grandes estabelecimentos com necessidades avançadas.
+
+**Implementação**:
+- ID: `premium_plan`
+- Preço: R$ 149,90/mês ou R$ 1439,90/ano
+- Recursos incluídos:
+  - Todos os recursos do plano Profissional
+  - Produtos ilimitados
+  - API para integrações personalizadas
+  - Relatórios detalhados e exportáveis
+  - Suporte dedicado 24/7
+  - Personalização completa da marca
+  - Gerenciamento de fidelidade
+  - Análise avançada de dados de clientes
+
+### Recursos por Plano {#recursos-plano}
+
+Os recursos são restringidos conforme o plano de assinatura do estabelecimento. A tabela abaixo mostra os principais recursos e suas disponibilidades:
+
+| Recurso | Básico | Profissional | Premium |
+|---------|:------:|:------------:|:-------:|
+| Cardápio digital | ✅ | ✅ | ✅ |
+| Gestão de pedidos | ✅ | ✅ | ✅ |
+| Limite de produtos | 50 | 150 | Ilimitado |
+| Relatórios básicos | ✅ | ✅ | ✅ |
+| Relatórios avançados | ❌ | ✅ | ✅ |
+| Múltiplos estabelecimentos | ❌ | ✅ | ✅ |
+| Sistema de delivery | ❌ | ✅ | ✅ |
+| Análise avançada de dados | ❌ | ❌ | ✅ |
+| Integração com sistemas de pagamento | ❌ | ✅ | ✅ |
+| Personalização completa | ❌ | ❌ | ✅ |
+| Suporte prioritário | ❌ | ✅ | ✅ |
+| Suporte 24/7 | ❌ | ❌ | ✅ |
+
+### Serviço de Assinaturas {#servico-assinaturas}
+
+**Propósito**: Gerencia os planos de assinatura e verifica se os estabelecimentos têm acesso às funcionalidades.
+
+**Implementação**:
+- Localizado em `lib/subscriptionService.ts`
+- Fornece métodos para:
+  - Listar planos disponíveis
+  - Obter detalhes de um plano específico
+  - Gerenciar assinaturas de estabelecimentos
+  - Verificar acesso a recursos com base no plano
+  - Verificar limites de produtos com base no plano
+
+**Principais interfaces**:
 
 ```typescript
-// Registro de usuário
-const { register, error } = useAuth();
-
-try {
-  await register('email@exemplo.com', 'Senha@123', 'Nome do Usuário', 'telefone');
-} catch (err) {
-  // Tratamento de erro
+export enum SubscriptionStatus {
+  ACTIVE = 'active',
+  TRIAL = 'trial',
+  CANCELED = 'canceled',
+  EXPIRED = 'expired',
+  PENDING = 'pending'
 }
 
-// Login de usuário
-const { login } = useAuth();
+export enum BillingCycle {
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly'
+}
 
-try {
-  await login('email@exemplo.com', 'Senha@123');
-} catch (err) {
-  // Tratamento de erro
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
+  order: number;
+  isActive: boolean;
+  isFeatured: boolean;
+}
+
+export interface EstablishmentSubscription {
+  id: string;
+  establishmentId: string;
+  planId: string;
+  plan?: SubscriptionPlan;
+  startDate: string;
+  endDate: string;
+  status: SubscriptionStatus;
+  billingCycle: BillingCycle;
 }
 ```
 
-**Fluxo de autenticação**:
-1. Usuário insere credenciais no formulário
-2. O hook `useAuth` é utilizado para chamar a função de registro ou login
-3. O AuthProvider valida os dados (especialmente senha no caso de registro)
-4. A requisição é enviada para o Appwrite
-5. Em caso de sucesso, a sessão do usuário é criada e o estado é atualizado
-6. O usuário é redirecionado para a área administrativa
+**Métodos principais**:
 
-**Observações técnicas**:
-- Na versão 17 do Appwrite, o método correto para login é `createEmailPasswordSession` em vez do antigo `createSession`
-- O cliente Appwrite deve ser configurado apenas com `setEndpoint` e `setProject` para operações do lado do cliente
-- As rotas protegidas utilizam o hook `useAuth` para verificar se o usuário está autenticado
+- `listAvailablePlans`: Lista todos os planos ativos disponíveis.
+- `getPlanById`: Obtém detalhes de um plano específico pelo ID.
+- `getEstablishmentSubscription`: Obtém a assinatura atual de um estabelecimento.
+- `updateEstablishmentSubscription`: Cria ou atualiza uma assinatura para um estabelecimento.
+- `cancelSubscription`: Cancela a assinatura de um estabelecimento.
+- `hasFeatureAccess`: Verifica se um estabelecimento tem acesso a um recurso específico.
+- `getMaxProductCount`: Obtém o número máximo de produtos que um estabelecimento pode cadastrar.
 
-## Funcionalidades
+### Middleware de Proteção {#middleware-protecao}
 
-### Autenticação
-
-**Propósito**: Gerencia o login, cadastro e sessão de usuários administrativos da plataforma, além de proteger as rotas administrativas.
+**Propósito**: Controla o acesso a recursos baseado no plano atual do estabelecimento.
 
 **Implementação**:
-- Utiliza o serviço **Appwrite Authentication** para criar contas (`account.create`), gerenciar sessões (`account.createEmailPasswordSession`, `account.deleteSession`, `account.get`) e atualizar preferências (`account.updatePrefs` para salvar o telefone).
-- O estado de autenticação (usuário logado, status de carregamento, erros) é gerenciado globalmente através do React Context API, implementado no `hooks/AuthProvider.tsx` e consumido pelo hook `hooks/useAuth.ts`.
-- As páginas de login (`app/admin/(auth)/login/page.tsx`) e cadastro (`app/admin/(auth)/cadastrar/page.tsx`) utilizam o `useAuth` para interagir com o `AuthProvider`.
-- A proteção de rotas é feita em duas camadas:
-    - **Middleware (`middleware.ts`)**: Verifica se o usuário já está logado (presença de cookie de sessão Appwrite) e o redireciona do `/admin/login` ou `/admin/cadastrar` para o `/admin/dashboard`.
-    - **Client-Side (`components/AdminLayoutClient.tsx`)**: Utiliza o hook `useAuth` para verificar se o usuário está autenticado antes de renderizar o conteúdo das rotas protegidas dentro do layout do dashboard. Se não estiver autenticado (e não estiver carregando), redireciona para `/admin/login`.
-- Os botões de logout na `AdminSidebar` e `AdminHeader` chamam a função `logout` do `useAuth` para encerrar a sessão e redirecionar.
+- Localizado em `middleware/featureGuard.ts`
+- Fornece dois middlewares principais:
+  - `featureGuard`: Verifica se o estabelecimento tem acesso a um recurso específico
+  - `productLimitGuard`: Verifica se o estabelecimento atingiu o limite de produtos
 
-**Arquivos Principais**:
-- `hooks/AuthProvider.tsx`
-- `hooks/useAuth.ts`
-- `lib/appwrite.ts`
-- `app/admin/(auth)/login/page.tsx`
-- `app/admin/(auth)/cadastrar/page.tsx`
-- `middleware.ts`
-- `components/AdminLayoutClient.tsx`
-- `components/AdminSidebar.tsx`
-- `components/AdminHeader.tsx`
+**Exemplo de uso do Middleware de Proteção**:
+
+```typescript
+// Em uma rota Next.js
+import { featureGuard } from '@/middleware/featureGuard';
+
+export default async function ProtectedRoute(req: NextRequest) {
+  // Verificar acesso ao recurso "Relatórios avançados"
+  const response = await featureGuard(req, 'Relatórios avançados');
+  
+  // Se o middleware retornou uma resposta, significa que o acesso foi negado
+  if (response) {
+    return response; // Redireciona para a página de planos
+  }
+  
+  // Continuar o fluxo normalmente se tiver acesso
+  // ...
+}
+```
+
+### Hook React de Assinaturas {#hook-assinaturas}
+
+**Propósito**: Fornece uma interface fácil para interagir com a API de assinaturas no frontend.
+
+**Implementação**:
+- Localizado em `hooks/useSubscription.ts`
+- Utiliza React Hooks para gerenciar estado e efeitos
+- Fornece métodos para:
+  - Carregar planos disponíveis
+  - Carregar assinatura atual
+  - Atualizar assinatura
+  - Cancelar assinatura
+  - Verificar acesso a recursos
+  - Verificar limites de produtos
+
+**Exemplo de uso do Hook de Assinaturas**:
+
+```tsx
+import { useSubscription } from '@/hooks/useSubscription';
+import { BillingCycle } from '@/lib/subscriptionService';
+
+function PlanosPage() {
+  const { 
+    plans, 
+    subscription, 
+    isLoading, 
+    error, 
+    updateSubscription 
+  } = useSubscription();
+
+  const handleSelectPlan = async (planId: string) => {
+    try {
+      await updateSubscription(planId, BillingCycle.MONTHLY);
+      alert('Plano atualizado com sucesso!');
+    } catch (err) {
+      console.error('Erro ao atualizar plano:', err);
+    }
+  };
+
+  if (isLoading) return <p>Carregando...</p>;
+  if (error) return <p>Erro: {error}</p>;
+
+  return (
+    <div>
+      <h1>Nossos Planos</h1>
+      {plans.map(plan => (
+        <div key={plan.id}>
+          <h2>{plan.name}</h2>
+          <p>{plan.description}</p>
+          <p>Preço: R$ {plan.priceMonthly.toFixed(2)}/mês</p>
+          <button onClick={() => handleSelectPlan(plan.id)}>
+            {subscription?.planId === plan.id ? 'Plano Atual' : 'Selecionar Plano'}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Interfaces e Tipos {#planos-interfaces}
+
+O módulo define várias interfaces e tipos para garantir segurança e consistência de tipos:
+
+- `SubscriptionStatus`: Enum que define os possíveis status de uma assinatura (ativo, trial, cancelado, expirado, pendente).
+- `BillingCycle`: Enum que define os ciclos de faturamento disponíveis (mensal, anual).
+- `SubscriptionPlan`: Interface que define a estrutura de um plano de assinatura.
+- `EstablishmentSubscription`: Interface que define a estrutura de uma assinatura de estabelecimento.
+
+### Tratamento de Erros {#planos-tratamento-erros}
+
+O módulo implementa tratamento robusto de erros em vários níveis:
+
+1. **API Endpoints**:
+   - Validação de parâmetros de entrada
+   - Respostas de erro com códigos HTTP apropriados
+   - Mensagens descritivas para facilitar o debugging
+
+2. **Serviço de Assinatura**:
+   - Try/catch em todas as operações de banco de dados
+   - Fallbacks para valores padrão em caso de erro
+   - Logs detalhados com informações relevantes
+
+3. **Hook React**:
+   - Tratamento de erros em todas as chamadas de API
+   - Estado de erro exposto para componentes consumidores
+   - Retry automático para algumas operações
+
+## API do Módulo de Planos de Assinatura {#api-planos}
+
+### Listar Planos Disponíveis {#api-listar-planos}
+
+```
+GET /api/subscription/plans
+```
+
+**Propósito**: Retorna todos os planos de assinatura ativos disponíveis.
+
+**Implementação**:
+- Localizado em `app/api/subscription/plans/route.ts`
+- Não requer autenticação
+- Usa o SubscriptionService para buscar planos ativos
+- Ordenados por ordem de exibição
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "plans": [
+    {
+      "id": "basic_plan",
+      "name": "Básico",
+      "description": "Ideal para pequenos estabelecimentos que estão começando.",
+      "priceMonthly": 49.9,
+      "priceYearly": 479.9,
+      "features": [
+        "Cardápio digital personalizado",
+        "Gerenciamento de pedidos",
+        "Até 50 produtos cadastrados",
+        "Relatórios básicos",
+        "Suporte por e-mail"
+      ],
+      "order": 1,
+      "isActive": true,
+      "isFeatured": false
+    },
+    // Outros planos...
+  ]
+}
+```
+
+**Resposta de Erro (500 Internal Server Error)**:
+
+```json
+{
+  "error": "Erro ao listar planos de assinatura"
+}
+```
+
+### Obter Detalhes de um Plano {#api-detalhes-plano}
+
+```
+GET /api/subscription/plans/:id
+```
+
+**Propósito**: Retorna detalhes de um plano específico.
+
+**Implementação**:
+- Localizado em `app/api/subscription/plans/[id]/route.ts`
+- Não requer autenticação
+- Usa o SubscriptionService para buscar um plano específico pelo ID
+
+**Parâmetros de URL**:
+- `id`: ID do plano (ex: basic_plan, professional_plan, premium_plan)
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "plan": {
+    "id": "professional_plan",
+    "name": "Profissional",
+    "description": "Perfeito para restaurantes em crescimento que precisam de mais recursos.",
+    "priceMonthly": 89.9,
+    "priceYearly": 863.9,
+    "features": [
+      "Todos os recursos do plano Básico",
+      "Até 150 produtos cadastrados",
+      "Gestão de múltiplos estabelecimentos",
+      "Sistema de delivery integrado",
+      "Relatórios avançados",
+      "Suporte prioritário",
+      "Integração com sistemas de pagamento"
+    ],
+    "order": 2,
+    "isActive": true,
+    "isFeatured": true
+  }
+}
+```
+
+**Resposta de Erro (404 Not Found)**:
+
+```json
+{
+  "error": "Plano não encontrado"
+}
+```
+
+### Obter Assinatura de Estabelecimento {#api-assinatura-estabelecimento}
+
+```
+GET /api/establishment/:identifier/subscription
+```
+
+**Propósito**: Retorna a assinatura atual de um estabelecimento.
+
+**Implementação**:
+- Localizado em `app/api/establishment/[identifier]/subscription/route.ts`
+- Requer autenticação do estabelecimento
+- Usa o SubscriptionService para buscar a assinatura atual
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "subscription": {
+    "id": "sub_123456",
+    "establishmentId": "est_123456",
+    "planId": "professional_plan",
+    "startDate": "2024-07-01T12:00:00.000Z",
+    "endDate": "2024-08-01T12:00:00.000Z",
+    "status": "active",
+    "billingCycle": "monthly",
+    "plan": {
+      "id": "professional_plan",
+      "name": "Profissional",
+      // Outros detalhes do plano...
+    }
+  }
+}
+```
+
+**Resposta de Erro (404 Not Found)**:
+
+```json
+{
+  "message": "Nenhuma assinatura encontrada para este estabelecimento"
+}
+```
+
+### Atualizar Assinatura {#api-atualizar-assinatura}
+
+```
+POST /api/establishment/:identifier/subscription/update
+```
+
+**Propósito**: Cria ou atualiza a assinatura de um estabelecimento.
+
+**Implementação**:
+- Localizado em `app/api/establishment/[identifier]/subscription/update/route.ts`
+- Requer autenticação do estabelecimento
+- Usa o SubscriptionService para criar ou atualizar a assinatura
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Corpo da Requisição**:
+
+```json
+{
+  "planId": "professional_plan",
+  "billingCycle": "monthly"
+}
+```
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "subscription": {
+    "id": "sub_123456",
+    "establishmentId": "est_123456",
+    "planId": "professional_plan",
+    "startDate": "2024-07-01T12:00:00.000Z",
+    "endDate": "2024-08-01T12:00:00.000Z",
+    "status": "active",
+    "billingCycle": "monthly",
+    "plan": {
+      "id": "professional_plan",
+      "name": "Profissional",
+      // Outros detalhes do plano...
+    }
+  }
+}
+```
+
+**Resposta de Erro (400 Bad Request)**:
+
+```json
+{
+  "error": "ID do plano e ciclo de faturamento são obrigatórios"
+}
+```
+
+### Cancelar Assinatura {#api-cancelar-assinatura}
+
+```
+POST /api/establishment/:identifier/subscription/cancel
+```
+
+**Propósito**: Cancela a assinatura atual de um estabelecimento.
+
+**Implementação**:
+- Localizado em `app/api/establishment/[identifier]/subscription/cancel/route.ts`
+- Requer autenticação do estabelecimento
+- Usa o SubscriptionService para cancelar a assinatura
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "message": "Assinatura cancelada com sucesso",
+  "subscription": {
+    "id": "sub_123456",
+    "establishmentId": "est_123456",
+    "planId": "professional_plan",
+    "startDate": "2024-07-01T12:00:00.000Z",
+    "endDate": "2024-08-01T12:00:00.000Z",
+    "status": "canceled",
+    "billingCycle": "monthly"
+  }
+}
+```
+
+**Resposta de Erro (404 Not Found)**:
+
+```json
+{
+  "message": "Nenhuma assinatura encontrada para este estabelecimento"
+}
+```
+
+### Verificar Acesso a Recursos {#api-verificar-acesso}
+
+```
+POST /api/establishment/:identifier/check-feature
+```
+
+**Propósito**: Verifica se um estabelecimento tem acesso a um recurso específico baseado em seu plano.
+
+**Implementação**:
+- Localizado em `app/api/establishment/[identifier]/check-feature/route.ts`
+- Requer autenticação do estabelecimento
+- Usa o SubscriptionService para verificar acesso ao recurso
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Corpo da Requisição**:
+
+```json
+{
+  "featureName": "Relatórios avançados"
+}
+```
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "hasAccess": true,
+  "feature": "Relatórios avançados"
+}
+```
+
+**Resposta de Erro (400 Bad Request)**:
+
+```json
+{
+  "error": "Nome do recurso não fornecido"
+}
+```
+
+### Verificar Limites de Produtos {#api-verificar-limites}
+
+```
+GET /api/establishment/:identifier/product-limit
+```
+
+**Propósito**: Verifica o limite de produtos disponíveis para um estabelecimento baseado em seu plano.
+
+**Implementação**:
+- Localizado em `app/api/establishment/[identifier]/product-limit/route.ts`
+- Requer autenticação do estabelecimento
+- Usa o SubscriptionService para verificar o limite de produtos
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "maxProducts": 150,
+  "currentProductCount": 45,
+  "remainingProducts": 105,
+  "canAddMore": true
+}
+```
+
+**Resposta de Erro (500 Internal Server Error)**:
+
+```json
+{
+  "error": "Erro ao verificar limite de produtos"
+}
+```
+
+## Segurança e Otimização {#seguranca-otimizacao}
+
+### Validação de Dados {#validacao-dados}
+
+**Propósito**: Garantir a integridade e validade dos dados recebidos pelo backend.
+
+**Implementação**: 
+- Usa biblioteca `zod` para definir esquemas de validação
+- Middleware `withValidation` localizado em `middleware/withValidation.ts`
+- Retorna mensagens de erro detalhadas para o cliente
+
+**Exemplo de Uso**:
+```typescript
+import { z } from 'zod';
+import { withValidation } from '@/middleware/withValidation';
+
+// Definir esquema de validação
+const produtoSchema = z.object({
+  nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+  preco: z.number().min(0, 'Preço deve ser maior ou igual a zero'),
+  categoriaId: z.string().uuid('ID de categoria inválido'),
+  estabelecimentoId: z.string().uuid('ID de estabelecimento inválido')
+});
+
+// Handler da rota
+async function criarProdutoHandler(req: NextRequest, data: z.infer<typeof produtoSchema>) {
+  // Dados já validados
+  const { nome, preco, categoriaId, estabelecimentoId } = data;
+  // Implementação...
+}
+
+// Aplicar middleware à rota
+export const POST = withValidation(produtoSchema, criarProdutoHandler);
+```
+
+### Permissões Multi-tenant {#permissoes-multi-tenant}
+
+**Propósito**: Garantir que cada usuário acesse apenas seus próprios dados, implementando uma separação segura entre os dados de diferentes estabelecimentos.
+
+**Implementação**:
+- Middleware `withMultiTenantAuth` localizado em `middleware/withMultiTenantAuth.ts`
+- Verifica se o usuário tem permissão para acessar o recurso solicitado
+- Suporta diferentes tipos de recursos (estabelecimento, menu, pedido, cliente)
+
+**Exemplo de Uso**:
+```typescript
+import { withMultiTenantAuth } from '@/middleware/withMultiTenantAuth';
+
+// Handler da rota
+async function obterDetalhesEstabelecimentoHandler(req: NextRequest) {
+  // A verificação de permissão já foi realizada
+  const { id } = req.params;
+  // Implementação...
+}
+
+// Aplicar middleware à rota
+export const GET = withMultiTenantAuth(
+  'establishment', // Tipo de recurso
+  'id',            // Nome do parâmetro que contém o ID do recurso
+  obterDetalhesEstabelecimentoHandler
+);
+```
+
+### Cache {#cache}
+
+**Propósito**: Otimizar o desempenho do aplicativo, reduzindo a carga no banco de dados para consultas frequentes.
+
+**Implementação**:
+- Serviço `CacheService` localizado em `lib/cacheService.ts`
+- Cache em memória com TTL (Time To Live) configurável
+- Suporte para invalidação de cache por prefixo de chave
+
+**Exemplo de Uso**:
+```typescript
+import { CacheService } from '@/lib/cacheService';
+
+// Buscar produtos com cache
+export async function listarProdutosPorCategoria(categoriaId: string) {
+  const cacheKey = `categoria:${categoriaId}:produtos`;
+  
+  return await CacheService.getOrSet(
+    cacheKey,
+    async () => {
+      // Esta função só é executada se os dados não estiverem no cache
+      const produtos = await databases.listDocuments(
+        'kratodeliv_db',
+        'products',
+        [Query.equal('categoryId', categoriaId)]
+      );
+      return produtos.documents;
+    },
+    300 // TTL de 5 minutos
+  );
+}
+
+// Invalidar cache ao atualizar um produto
+export async function atualizarProduto(produtoId: string, dados: any) {
+  const produto = await databases.updateDocument(
+    'kratodeliv_db',
+    'products',
+    produtoId,
+    dados
+  );
+  
+  // Invalidar caches relacionados
+  CacheService.delete(`produto:${produtoId}`);
+  CacheService.invalidateByPrefix(`categoria:${produto.categoryId}`);
+  
+  return produto;
+}
+```
+
+### Sistema de Logs {#sistema-logs}
+
+**Propósito**: Registrar operações críticas, erros e atividades importantes para monitoramento, depuração e auditoria.
+
+**Implementação**:
+- Serviço `LoggingService` localizado em `lib/loggingService.ts`
+- Suporta diferentes níveis de log (INFO, WARNING, ERROR, CRITICAL)
+- Registra logs no console e persiste no Appwrite Database
+- Configurável por ambiente (produção, desenvolvimento, teste)
+
+**Exemplo de Uso**:
+```typescript
+import { LoggingService, ActivityType } from '@/lib/loggingService';
+
+// Registrar login bem-sucedido
+await LoggingService.info(
+  ActivityType.AUTH,
+  `Login bem-sucedido: ${usuario.email}`,
+  {
+    userId: usuario.id,
+    ip: request.headers.get('x-forwarded-for') || undefined,
+    userAgent: request.headers.get('user-agent') || undefined
+  }
+);
+
+// Registrar erro crítico
+try {
+  // Alguma operação crítica
+} catch (error) {
+  await LoggingService.critical(
+    ActivityType.PAYMENT,
+    'Falha no processamento de pagamento',
+    {
+      resourceId: pagamento.id,
+      establishmentId: estabelecimento.id,
+      metadata: {
+        error: error.message,
+        paymentMethod: pagamento.metodo,
+        amount: pagamento.valor
+      }
+    }
+  );
+  throw error;
+}
+```
+
+### Rate Limiting {#rate-limiting}
+
+**Propósito**: Proteger o sistema contra abusos, limitando o número de requisições por IP, usuário ou endpoint específico.
+
+**Implementação**:
+- Middleware `withRateLimit` localizado em `middleware/rateLimiter.ts`
+- Implementação em memória (para ambiente com servidor único)
+- Suporta diferentes tipos de limitação (por IP, por usuário, por endpoint)
+- Integrado com o sistema de logs para registrar abusos
+
+**Configurações**:
+- API pública: 100 requisições por minuto por IP
+- API autenticada: 300 requisições por minuto por usuário
+- Rotas sensíveis (login, pagamento): 5-10 requisições por minuto
+
+**Exemplo de Uso**:
+```typescript
+import { withRateLimit } from '@/middleware/rateLimiter';
+
+// Aplicar rate limiting à rota de login
+export const POST = withRateLimit(
+  loginHandler,
+  {
+    maxRequests: 5,
+    windowMs: 60 * 1000, // 1 minuto
+    type: 'ip',
+    endpoint: 'auth/login',
+    message: 'Muitas tentativas de login. Tente novamente em alguns minutos.'
+  }
+);
+
+// Aplicar rate limiting à API de listagem de produtos (mais permissiva)
+export const GET = withRateLimit(
+  listarProdutosHandler,
+  {
+    maxRequests: 100,
+    windowMs: 60 * 1000, // 1 minuto
+    type: 'ip'
+  }
+);
+```
+
+### Considerações de Segurança
+
+- Todas as senhas são armazenadas usando o sistema de hashing do Appwrite
+- Dados sensíveis nunca são expostos via API
+- As permissões do Appwrite são configuradas para garantir que cada usuário acesse apenas seus próprios dados
+- Todas as rotas administrativas verificam a autenticação e as permissões do usuário
+- Logs de segurança são mantidos para operações críticas
+- O rate limiting protege contra ataques de força bruta e DDoS
+
+### Melhores Práticas Implementadas
+
+1. **Validação de Entradas**
+   - Todas as entradas de usuário são validadas antes do processamento
+   - Esquemas Zod garantem a integridade dos dados
+
+2. **Sanitização de Dados**
+   - Dados de entrada são sanitizados para evitar injeção de SQL e XSS
+   - Dados sensíveis são filtrados dos logs
+
+3. **Proteção contra Ataques Comuns**
+   - Proteção contra CSRF implementada através de tokens
+   - Proteção contra ataques de força bruta através de rate limiting
+   - Cabeçalhos de segurança configurados para proteção adicional
+
+4. **Otimização de Desempenho**
+   - Cache implementado para consultas frequentes

@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, MapPin, Clock, DollarSign } from "lucide-react";
+import { Globe, MapPin, Clock, DollarSign, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,6 +9,11 @@ const menuItems = [
     title: "Informações Gerais",
     icon: Globe,
     href: "/admin/settings/general",
+  },
+  {
+    title: "Tipo de Estabelecimento",
+    icon: Store,
+    href: "/admin/settings/establishment-type",
   },
   {
     title: "Endereço",

@@ -409,4 +409,114 @@ CLOUDINARY_API_SECRET=
 # Pagamento
 PAYMENT_GATEWAY_API_KEY=
 PAYMENT_WEBHOOK_SECRET=
-``` 
+```
+
+## Appwrite Backend <a id="appwrite-backend"></a>
+
+O backend do Cardápio Digital Krato utiliza o Appwrite como BaaS (Backend as a Service), aproveitando seus serviços de autenticação, banco de dados e armazenamento.
+
+### Configuração do Banco de Dados <a id="configuracao-banco"></a>
+
+O banco de dados do sistema está configurado no Appwrite com o ID `kratodeliv_db`.
+
+### Coleções e Estrutura <a id="colecoes-estrutura"></a>
+
+Foram criadas as seguintes coleções no banco de dados:
+
+#### Establishments (Estabelecimentos)
+Armazena os dados dos estabelecimentos cadastrados no sistema.
+
+**Atributos principais:**
+- `name` (string): Nome do estabelecimento
+- `slug` (string): Identificador único para URL
+- `description` (string): Descrição do estabelecimento
+- `logoUrl` (string): URL da logo
+- `coverImageUrl` (string): URL da imagem de capa
+- `type` (string): Tipo de estabelecimento
+- `phoneNumber` (string): Telefone de contato
+- `whatsappNumber` (string): Número de WhatsApp
+- `isOpen` (boolean): Status de funcionamento
+- `ownerId` (string): ID do proprietário/administrador
+- `createdAt` (datetime): Data de criação
+- `updatedAt` (datetime): Data de atualização
+
+#### Categories (Categorias)
+Armazena as categorias do cardápio digital.
+
+**Atributos principais:**
+- `name` (string): Nome da categoria
+- `description` (string): Descrição da categoria
+- `imageUrl` (string): URL da imagem da categoria
+- `displayOrder` (integer): Ordem de exibição
+- `establishmentId` (string): ID do estabelecimento
+- `createdAt` (datetime): Data de criação
+- `updatedAt` (datetime): Data de atualização
+
+#### Products (Produtos)
+Armazena os produtos do cardápio.
+
+**Atributos principais:**
+- `name` (string): Nome do produto
+- `description` (string): Descrição do produto
+- `price` (float): Preço do produto
+- `imageUrl` (string): URL da imagem do produto
+- `isActive` (boolean): Status de disponibilidade
+- `isCustomizable` (boolean): Indica se o produto é personalizável
+- `categoryId` (string): ID da categoria
+- `establishmentId` (string): ID do estabelecimento
+- `createdAt` (datetime): Data de criação
+- `updatedAt` (datetime): Data de atualização
+
+#### Orders (Pedidos)
+Armazena os pedidos realizados.
+
+**Atributos principais:**
+- `number` (integer): Número do pedido
+- `customerId` (string): ID do cliente (opcional)
+- `customerName` (string): Nome do cliente
+- `customerPhone` (string): Telefone do cliente
+- `establishmentId` (string): ID do estabelecimento
+- `status` (string): Status do pedido
+- `deliveryType` (enum): Tipo de entrega ("delivery" ou "pickup")
+- `deliveryFee` (float): Taxa de entrega
+- `subtotal` (float): Subtotal
+- `total` (float): Total do pedido
+- `paymentMethod` (string): Método de pagamento
+- `change` (float): Troco (opcional)
+- `notes` (string): Observações
+- `createdAt` (datetime): Data de criação
+- `updatedAt` (datetime): Data de atualização
+
+#### Customers (Clientes)
+Armazena os dados dos clientes.
+
+**Atributos principais:**
+- `name` (string): Nome do cliente
+- `email` (string, email): Email do cliente
+- `phone` (string): Telefone do cliente
+- `establishmentId` (string): ID do estabelecimento
+- `createdAt` (datetime): Data de criação
+- `updatedAt` (datetime): Data de atualização
+
+### Índices e Relacionamentos <a id="indices-relacionamentos"></a>
+
+Foram criados índices para otimizar consultas frequentes:
+
+#### Índices de Establishments:
+- `idx_establishment_slug`: Índice para busca por slug
+- `idx_establishment_ownerId`: Índice para busca por proprietário
+
+#### Índices de Categories:
+- `idx_category_establishmentId`: Índice para busca por estabelecimento
+
+#### Índices de Products:
+- `idx_product_categoryId`: Índice para busca por categoria
+- `idx_product_establishmentId`: Índice para busca por estabelecimento
+
+#### Índices de Orders:
+- `idx_order_establishmentId`: Índice para busca por estabelecimento
+- `idx_order_status`: Índice para busca por status
+
+#### Índices de Customers:
+- `idx_customer_establishmentId`: Índice para busca por estabelecimento
+- `idx_customer_phone`: Índice para busca por telefone 

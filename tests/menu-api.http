@@ -1,0 +1,129 @@
+# Testes da API do Cardápio Digital
+# Nota: Este arquivo pode ser usado com a extensão REST Client no VSCode
+
+### Variáveis
+@baseUrl = http://localhost:3000/api/menu
+@establishmentId = seu-establishment-id
+@categoryId = sua-categoria-id
+@productId = seu-produto-id
+
+### ----- CATEGORIAS -----
+
+### Listar todas as categorias
+GET {{baseUrl}}/categories?establishmentId={{establishmentId}}
+
+### Criar uma nova categoria
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "name": "Pizzas",
+  "description": "Nossas deliciosas pizzas artesanais",
+  "establishmentId": "{{establishmentId}}",
+  "displayOrder": 1
+}
+
+### Atualizar uma categoria
+PUT {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "id": "{{categoryId}}",
+  "name": "Pizzas Artesanais",
+  "description": "Nossas deliciosas pizzas artesanais feitas no forno a lenha",
+  "displayOrder": 1
+}
+
+### Excluir uma categoria
+DELETE {{baseUrl}}/categories?id={{categoryId}}
+
+### Reordenar categorias
+PATCH {{baseUrl}}/categories/reorder
+Content-Type: application/json
+
+{
+  "categories": [
+    { "id": "categoria-id-1" },
+    { "id": "categoria-id-2" },
+    { "id": "categoria-id-3" }
+  ]
+}
+
+### ----- PRODUTOS -----
+
+### Listar todos os produtos
+GET {{baseUrl}}/products?establishmentId={{establishmentId}}
+
+### Listar produtos por categoria
+GET {{baseUrl}}/products?establishmentId={{establishmentId}}&categoryId={{categoryId}}
+
+### Buscar produtos
+GET {{baseUrl}}/products?establishmentId={{establishmentId}}&search=pizza
+
+### Filtrar por disponibilidade
+GET {{baseUrl}}/products?establishmentId={{establishmentId}}&active=true
+
+### Criar um novo produto
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Pizza Margherita",
+  "description": "Molho de tomate, mussarela de búfala, manjericão fresco e azeite",
+  "price": 59.90,
+  "categoryId": "{{categoryId}}",
+  "establishmentId": "{{establishmentId}}",
+  "isActive": true,
+  "isCustomizable": false,
+  "additionals": []
+}
+
+### Atualizar um produto
+PUT {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "{{productId}}",
+  "name": "Pizza Margherita Especial",
+  "description": "Molho de tomate italiano, mussarela de búfala importada, manjericão fresco e azeite extra virgem",
+  "price": 62.90,
+  "categoryId": "{{categoryId}}",
+  "isActive": true,
+  "isCustomizable": false,
+  "additionals": []
+}
+
+### Excluir um produto
+DELETE {{baseUrl}}/products?id={{productId}}
+
+### Atualizar adicionais de um produto
+PATCH {{baseUrl}}/products/additionals
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "additionals": [
+    {
+      "id": "adicional-id-1",
+      "name": "Borda recheada com catupiry",
+      "description": "Adicione uma deliciosa borda recheada com catupiry",
+      "price": 8.9,
+      "isAvailable": true
+    },
+    {
+      "id": "adicional-id-2",
+      "name": "Mussarela extra",
+      "description": "Porção extra de mussarela",
+      "price": 5.9,
+      "isAvailable": true
+    }
+  ]
+}
+
+### Upload de imagem (formulário multipart)
+# Nota: Este teste deve ser feito via Postman ou interface similar
+# POST {{baseUrl}}/products/upload
+# Content-Type: multipart/form-data
+# 
+# - field "file": arquivo de imagem
+# - field "productId": ID do produto 

@@ -315,3 +315,53 @@ Para volumes maiores, considere:
 - [ ] Backups automáticos configurados
 - [ ] Domínio personalizado configurado (opcional)
 - [ ] SSL/TLS ativado 
+
+## Deploy na Vercel
+
+### Pré-requisitos
+- Conta na Vercel (pode usar a conta do GitHub)
+- Repositório do projeto no GitHub
+- Node.js >= 18.x
+- Yarn instalado globalmente
+
+### Método 1: Deploy Automático (Recomendado)
+1. Acesse [vercel.com](https://vercel.com)
+2. Faça login com sua conta GitHub
+3. Clique em "Import Project"
+4. Selecione o repositório `kratodeliv12`
+5. A Vercel detectará automaticamente as configurações do Next.js
+6. Clique em "Deploy"
+
+### Método 2: Deploy via CLI
+```bash
+# Instalar Vercel CLI
+yarn global add vercel
+
+# Login na sua conta Vercel
+vercel login
+
+# Deploy (na raiz do projeto)
+vercel
+```
+
+### Configurações Automáticas
+A Vercel configurará automaticamente:
+- HTTPS
+- CDN global
+- CI/CD (deploy automático a cada push na main)
+- Preview deployments para PRs
+- Monitoramento de performance
+- Analytics (opcional)
+
+### Variáveis de Ambiente
+Se necessário, configure as seguintes variáveis de ambiente na Vercel:
+- `NEXT_PUBLIC_API_URL`: URL da API em produção
+- `NEXT_PUBLIC_ENVIRONMENT`: "production"
+
+### Monitoramento
+- Acesse o dashboard da Vercel para monitorar:
+  - Status do deploy
+  - Logs
+  - Performance
+  - Analytics
+  - Domínios e SSL 

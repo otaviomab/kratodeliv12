@@ -12,10 +12,10 @@
 ## Autenticação
 - [x] Desenvolver página de login (/admin/login)
 - [x] Desenvolver página de cadastro (/admin/signup)
-- [ ] Criar formulário de recuperação de senha
-- [ ] Implementar hooks de autenticação (useAuth.ts)
-- [ ] Criar contexto de autenticação (AuthContext.tsx)
-- [ ] Implementar proteção de rotas autenticadas
+- [x] Criar formulário de recuperação de senha
+- [x] Implementar hooks de autenticação (useAuth.ts)
+- [x] Criar contexto de autenticação (AuthContext.tsx)
+- [x] Implementar proteção de rotas autenticadas
 
 ## Dashboard Principal
 - [x] Criar layout do dashboard principal
@@ -30,44 +30,44 @@
 - [x] Implementar filtros de pedidos (status, data, pagamento)
 - [x] Desenvolver modal de detalhes do pedido
 - [x] Criar componente de alteração de status do pedido
-- [ ] Implementar sistema de notificações para novos pedidos
-- [ ] Desenvolver funcionalidade de impressão de pedido
-- [ ] Adicionar sons para notificações de novos pedidos
+- [x] Implementar sistema de notificações para novos pedidos
+- [x] Desenvolver funcionalidade de impressão de pedido
+- [x] Adicionar sons para notificações de novos pedidos
 
 ## Gerenciamento de Cardápio
 - [x] Criar interface de gerenciamento de categorias
-- [ ] Implementar CRUD de categorias
+- [x] Implementar CRUD de categorias
 - [x] Desenvolver interface de listagem de produtos
-- [ ] Criar formulário de adição/edição de produtos
-- [ ] Implementar upload de imagens (react-dropzone)
-- [ ] Desenvolver sistema de adicionais/complementos
-- [ ] Criar funcionalidade de produtos personalizáveis
-- [ ] Implementar ordenação de itens do cardápio
+- [x] Criar formulário de adição/edição de produtos
+- [x] Implementar upload de imagens (react-dropzone)
+- [x] Desenvolver sistema de adicionais/complementos
+- [x] Criar funcionalidade de produtos personalizáveis
+- [x] Implementar ordenação de itens do cardápio
 
 ## Configurações do Estabelecimento
-- [ ] Criar página de configurações gerais
-- [ ] Implementar upload de logo e imagem de capa
-- [ ] Desenvolver seção de informações básicas do estabelecimento
-- [ ] Criar interface de configuração de endereço
-- [ ] Implementar configuração de horários de funcionamento
-- [ ] Desenvolver configurações de entrega e regiões
-- [ ] Criar seção de métodos de pagamento
-- [ ] Implementar configuração de integração com WhatsApp
+- [x] Criar página de configurações gerais
+- [x] Implementar upload de logo e imagem de capa
+- [x] Desenvolver seção de informações básicas do estabelecimento
+- [x] Criar interface de configuração de endereço
+- [x] Implementar configuração de horários de funcionamento
+- [x] Desenvolver configurações de entrega e regiões
+- [x] Criar seção de métodos de pagamento
+- [x] Implementar configuração de integração com WhatsApp
 - [ ] Desenvolver configurações de impressão térmica
 
 ## Relatórios
-- [ ] Criar página de relatórios
-- [ ] Implementar filtros por período
-- [ ] Desenvolver gráficos de vendas e análises
-- [ ] Criar relatório de produtos mais vendidos
-- [ ] Implementar relatório de faturamento
-- [ ] Desenvolver análise de ticket médio
+- [x] Criar página de relatórios
+- [x] Implementar filtros por período
+- [x] Desenvolver gráficos de vendas e análises
+- [x] Criar relatório de produtos mais vendidos
+- [x] Implementar relatório de faturamento
+- [x] Desenvolver análise de ticket médio
 
 ## Planos de Assinatura
-- [ ] Criar página de visualização de planos
-- [ ] Implementar comparativo entre planos
-- [ ] Desenvolver processo de upgrade/downgrade
-- [ ] Criar visualização de recursos disponíveis por plano
+- [x] Criar página de visualização de planos
+- [x] Implementar comparativo entre planos
+- [x] Desenvolver processo de upgrade/downgrade
+- [x] Criar visualização de recursos disponíveis por plano
 
 ## UI/UX e Responsividade
 - [x] Implementar tema claro/escuro
@@ -76,7 +76,6 @@
 - [x] Implementar feedback visual para ações
 - [x] Criar componentes de loading e estados vazios
 - [ ] Testar usabilidade e fazer ajustes
-- [ ] Validar acessibilidade (WCAG)
 
 ## Preparação para Integração com Backend
 - [x] Criar serviços mock para teste sem backend

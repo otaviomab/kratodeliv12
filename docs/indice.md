@@ -4,6 +4,12 @@
 - [Introdução ao Sistema](mdc:#introducao)
 - [Arquitetura](mdc:#arquitetura)
 
+## Appwrite Backend
+- [Configuração do Banco de Dados](mdc:#configuracao-banco)
+- [Coleções e Estrutura](mdc:#colecoes-estrutura)
+- [Índices e Relacionamentos](mdc:#indices-relacionamentos)
+- [Autenticação com Appwrite](mdc:#autenticacao-appwrite)
+
 ## Painel Administrativo
 - [Gerenciamento de Cardápio](mdc:#cardapio)
   - [Categorias](mdc:#categorias)
@@ -13,10 +19,17 @@
   - [Listagem de Pedidos](mdc:#listagem-pedidos)
   - [Detalhes de Pedido](mdc:#detalhes-pedido)
   - [Status de Pedidos](mdc:#status-pedidos)
+- [Planos de Assinatura](mdc:#planos-assinatura)
+  - [Funcionalidades por Plano](mdc:#funcionalidades-plano)
+  - [Gerenciamento de Assinaturas](mdc:#gerenciamento-assinaturas)
+  - [Limitações Baseadas no Plano](mdc:#limitacoes-plano)
 - [Configurações do Estabelecimento](mdc:#configuracoes)
   - [Informações Gerais](mdc:#informacoes-gerais)
-  - [Horários de Funcionamento](mdc:#horarios)
-  - [Configurações de Entrega](mdc:#entrega)
+  - [Gerenciamento de Endereço](mdc:#gerenciamento-endereco)
+  - [Horários de Funcionamento](mdc:#horarios-funcionamento)
+  - [Configurações de Entrega](mdc:#configuracoes-entrega)
+  - [Métodos de Pagamento](mdc:#metodos-pagamento)
+  - [Integração com WhatsApp](mdc:#integracao-whatsapp)
 - [Relatórios e Análises](docs/reports.md)
   - [Vendas](docs/reports.md#vendas)
   - [Produtos Populares](docs/reports.md#produtos-populares)
@@ -25,6 +38,39 @@
 ## API e Backend
 - [Rotas de API](mdc:#rotas-api)
 - [Modelos de Dados](mdc:#modelos)
+- [APIs do Módulo de Cardápio](documentacao.md#api-cardapio)
+  - [API de Categorias](documentacao.md#api-categorias)
+  - [Reordenação de Categorias](documentacao.md#reordenacao-categorias)  
+  - [API de Produtos](documentacao.md#api-produtos)
+  - [Upload de Imagens de Produtos](documentacao.md#upload-imagens-produtos)
+  - [Gerenciamento de Adicionais](documentacao.md#gerenciamento-adicionais)
+- [Endpoints de Estabelecimento](documentacao.md#api-estabelecimento)
+  - [GET /api/establishment/:slug](documentacao.md#api-estabelecimento)
+  - [POST /api/establishment](documentacao.md#api-estabelecimento)
+  - [PUT /api/establishment/:id](documentacao.md#api-estabelecimento)
+  - [DELETE /api/establishment/:id](documentacao.md#api-estabelecimento)
+  - [Validação Automática de Horário](documentacao.md#estabelecimento-validacao-automatica)
+- [API do Módulo de Configurações](documentacao.md#api-configuracoes)
+  - [API de Informações Gerais](documentacao.md#api-informacoes-gerais)
+  - [API de Endereço](documentacao.md#api-endereco)
+  - [API de Horários de Funcionamento](documentacao.md#api-horarios)
+  - [API de Configurações de Entrega](documentacao.md#api-entrega)
+  - [API de Métodos de Pagamento](documentacao.md#api-pagamentos)
+  - [API de Integração com WhatsApp](documentacao.md#api-whatsapp)
+- [API do Módulo de Planos de Assinatura](documentacao.md#api-planos)
+  - [Listar Planos Disponíveis](documentacao.md#api-listar-planos)
+  - [Obter Detalhes de um Plano](documentacao.md#api-detalhes-plano)
+  - [Obter Assinatura de Estabelecimento](documentacao.md#api-assinatura-estabelecimento)
+  - [Atualizar Assinatura](documentacao.md#api-atualizar-assinatura)
+  - [Cancelar Assinatura](documentacao.md#api-cancelar-assinatura)
+  - [Verificar Acesso a Recursos](documentacao.md#api-verificar-acesso)
+  - [Verificar Limites de Produtos](documentacao.md#api-verificar-limites)
+- [Endpoints de Carrinho](documentacao.md#api-carrinho)
+- [Módulo de Pedidos](documentacao.md#modulo-pedidos)
+  - [Serviço de Pedidos (OrderService)](documentacao.md#ordem-service)
+  - [Rotas de API para Pedidos](documentacao.md#api-orders)
+  - [Notificações em Tempo Real](documentacao.md#notificacoes-tempo-real)
+  - [Estatísticas de Pedidos](documentacao.md#estatisticas-pedidos)
 
 ## Frontend Cliente
 - [Página de Cardápio](mdc:#pagina-cardapio)
@@ -47,9 +93,15 @@
 - [Componentes UI](documentacao.md#componentes-ui)
 
 ## Funcionalidades
-- [Navegação do Cardápio](documentacao.md#navegacao-cardapio)
-- [Processo de Pedido](documentacao.md#processo-pedido)
-- [Status do Pedido](documentacao.md#status-pedido)
+- [Dashboard](mdc:#dashboard)
+- [Cardápio](mdc:#cardapio)
+- [Pedidos](mdc:#pedidos)
+- [Clientes](mdc:#clientes)
+  - [Listagem de Clientes](mdc:#listagem-clientes)
+  - [Detalhes de Cliente](mdc:#detalhes-cliente)
+  - [Pedidos de Cliente](mdc:#pedidos-cliente)
+  - [Tratamento de Erros](mdc:#clientes-tratamento-erros)
+- [Configurações](mdc:#configuracoes)
 - [Painel Administrativo](documentacao.md#painel-administrativo)
 - [Dashboard Administrativo](documentacao.md#dashboard-administrativo)
 - [Sistema de Gerenciamento de Pedidos](documentacao.md#sistema-gerenciamento-pedidos)
@@ -65,6 +117,10 @@
 
 ## Atualizações e Mudanças
 - [Atualização para Tailwind CSS v4 (Janeiro/2024)](./atualizacoes/2024-01-tailwind-v4.md)
+- [Implementação de APIs do Módulo de Cardápio (Maio/2024)](./atualizacoes/2024-05-api-cardapio.md)
+- [Implementação do Módulo de Pedidos (Junho/2024)](./atualizacoes/2024-06-modulo-pedidos.md)
+- [Implementação do Módulo de Planos de Assinatura (Julho/2024)](./atualizacoes/2024-07-modulo-planos.md)
+- [Tratamento de Erros com Appwrite (Julho/2024)](./atualizacoes/tratamento-erros-appwrite.md)
 
 ## Autenticação
 - [Visão Geral da Autenticação](mdc:#autenticacao)
@@ -94,13 +150,6 @@
 - [Utilitários](mdc:#estrutura-utils)
 - [Tipos](mdc:#estrutura-tipos)
 
-## Funcionalidades
-- [Dashboard](mdc:#dashboard)
-- [Cardápio](mdc:#cardapio)
-- [Pedidos](mdc:#pedidos)
-- [Clientes](mdc:#clientes)
-- [Configurações](mdc:#configuracoes)
-
 ## Temas e Estilos
 - [Cores](mdc:#cores)
 - [Tipografia](mdc:#tipografia)
@@ -123,6 +172,7 @@
 ## Páginas do Admin
 - [Página de Clientes](mdc:#pagina-de-clientes)
 - [Página de Relatórios](mdc:#pagina-de-relatorios)
+- [Página de Planos](mdc:#pagina-planos)
 
 ## Dashboard Admin
 - [Estilização do Dashboard](mdc:#estilizacao-dashboard)
@@ -153,6 +203,49 @@
   - [Menu de Perfil](mdc:#menu-de-perfil)
   - [Sidebar](mdc:#sidebar)
 
+## Documentação
+
+- [Regras de Negócio](./regras.md)
+- [Todo (Tarefas)](./todo.md)
+- [Estrutura do Banco de Dados](./database.md)
+- [Testes Automatizados](./testes.md)
+
+## API Endpoints
+
 ### Índice
 
 - [Autenticação](documentacao.md#autenticacao)
+
+## Módulo de Relatórios
+- [Visão Geral do Módulo de Relatórios](documentacao.md#modulo-relatorios)
+- [Relatório de Vendas por Período](documentacao.md#relatorio-vendas)
+- [Produtos Mais Vendidos](documentacao.md#produtos-mais-vendidos)
+- [Faturamento por Período](documentacao.md#faturamento-periodo)
+- [Cálculo de Ticket Médio](documentacao.md#calculo-ticket-medio)
+- [Estatísticas de Desempenho](documentacao.md#estatisticas-desempenho)
+- [Interfaces e Tipos](documentacao.md#relatorios-interfaces)
+- [Considerações de Desempenho](documentacao.md#relatorios-desempenho)
+- [Tratamento de Erros](documentacao.md#relatorios-tratamento-erros)
+
+## Módulo de Planos de Assinatura
+- [Visão Geral do Módulo de Planos](documentacao.md#modulo-planos)
+- [Planos Disponíveis](documentacao.md#planos-disponiveis)
+- [Recursos por Plano](documentacao.md#recursos-plano)
+- [Serviço de Assinaturas](documentacao.md#servico-assinaturas)
+- [Middleware de Proteção](documentacao.md#middleware-protecao)
+- [Hook React de Assinaturas](documentacao.md#hook-assinaturas)
+- [Interfaces e Tipos](documentacao.md#planos-interfaces)
+- [Tratamento de Erros](documentacao.md#planos-tratamento-erros)
+
+## Segurança e Otimização
+- [Validação de Dados](mdc:#validacao-dados)
+- [Permissões Multi-tenant](mdc:#permissoes-multi-tenant)
+- [Cache](mdc:#cache)
+- [Sistema de Logs](mdc:#sistema-logs)
+- [Rate Limiting](mdc:#rate-limiting)
+
+## Integrações
+- [Serviços Externos](mdc:#servicos-externos)
+
+## Ferramentas de Desenvolvimento
+- [Serviços Externos](mdc:#servicos-externos)

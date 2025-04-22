@@ -5,6 +5,20 @@ alwaysApply: false
 ---
 ## **Cursor Rules para Appwrite**
 
+> **IMPORTANTE: Versão Atual do SDK - v17.0.2**
+
+### **Regras de Versionamento**
+
+1. **API Compatível com SDK v17+**
+   - Utilize sempre os métodos mais recentes (v17), como `createEmailPasswordSession` em vez de `createSession`
+   - API incompatível com versões anteriores à v16
+
+2. **Configuração do Cliente**
+   - Use apenas `setEndpoint` e `setProject` para operações do lado do cliente
+   - Para operações server-side, utilize `setKey` junto com os anteriores
+
+### **Regras Gerais**
+
 1. **Use o SDK oficial do Appwrite**  
    - Interaja com o backend exclusivamente pelo SDK oficial para consistência e suporte.
 
@@ -13,15 +27,24 @@ alwaysApply: false
 
 3. **Implemente autenticação com Appwrite Auth**  
    - Use os recursos nativos do Appwrite para login, registro e gerenciamento de sessões.
+   - **Utilize sempre `createEmailPasswordSession` para login (v17+)**
+   - **Para logout, use `deleteSession('current')` (v17+)**
 
 4. **Garanta segurança nas senhas**  
    - Confie no hashing automático do Appwrite para armazenar senhas de forma segura.
+   - Aplique validação de senha na aplicação:
+     - Mínimo de 8 caracteres
+     - Pelo menos 1 letra maiúscula
+     - Pelo menos 1 letra minúscula
+     - Pelo menos 1 número
+     - Pelo menos 1 caractere especial
 
 5. **Otimize queries no banco de dados**  
    - Busque apenas os dados necessários, usando filtros e limites nas consultas.
 
 6. **Prefira uploads diretos para o Storage**  
    - Envie arquivos diretamente ao Appwrite Storage, evitando codificação em base64.
+   - Limite de 5MB por arquivo (configuração atual)
 
 7. **Aproveite o Appwrite Realtime**  
    - Use o recurso de tempo real para atualizações dinâmicas, como novos pedidos ou notificações.
@@ -34,3 +57,14 @@ alwaysApply: false
 
 10. **Monitore o uso de recursos**  
     - Acompanhe o consumo de banda, armazenamento e requisições para otimizar custos.
+
+### **Identificadores de Banco de Dados**
+
+- **Database ID**: `kratodeliv_db`
+- **Collections**:
+  - `users` - Usuários e autenticação
+  - `storage` - Armazenamento e arquivos
+  - `establishments` - Dados de estabelecimentos
+  - `products` - Produtos do cardápio
+  - `categories` - Categorias do cardápio
+  - `orders` - Pedidos realizados

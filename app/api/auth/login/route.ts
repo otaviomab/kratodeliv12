@@ -1,4 +1,9 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { withValidation } from '@/middleware/withValidation';
+import { withRateLimit } from '@/middleware/rateLimiter';
+import { LoggingService, ActivityType } from '@/lib/loggingService';
+import { Account, Client, ID } from 'appwrite';
 
 // Enum para roles de usuário
 enum Role {
@@ -15,76 +20,100 @@ interface User {
   role: Role;
 }
 
-// Usuários mockados para testes
-const mockUsers: User[] = [
-  {
-    id: "user1",
-    name: "Admin",
-    email: "admin@example.com",
-    password: "admin123", // Em produção, seria um hash
-    role: Role.ADMIN
-  },
-  {
-    id: "user2",
-    name: "Cliente",
-    email: "cliente@example.com",
-    password: "cliente123", // Em produção, seria um hash
-    role: Role.USER
-  }
-];
+// Esquema de validação para o login
+const loginSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres')
+});
 
-export async function POST(request: Request) {
-  const data = await request.json();
-  
-  // Validar dados recebidos
-  if (!data.email || !data.password) {
-    return NextResponse.json(
-      { error: "Email e senha são obrigatórios" },
-      { status: 400 }
-    );
-  }
-  
-  // Buscar usuário pelo email
-  const user = mockUsers.find(user => user.email === data.email);
-  
-  // Verificar se o usuário existe
-  if (!user) {
-    return NextResponse.json(
-      { error: "Email ou senha inválidos" },
-      { status: 401 }
-    );
-  }
-  
-  // Verificar a senha (em produção, usaria bcrypt.compare ou similar)
-  if (user.password !== data.password) {
-    return NextResponse.json(
-      { error: "Email ou senha inválidos" },
-      { status: 401 }
-    );
-  }
-  
-  // Gerar token JWT simulado
-  const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${Buffer.from(
-    JSON.stringify({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      exp: Math.floor(Date.now() / 1000) + 3600
-    })
-  ).toString('base64')}.MOCK_SIGNATURE`;
+// Cliente Appwrite
+const client = new Client()
+  .setEndpoint(process.env.APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1')
+  .setProject(process.env.APPWRITE_PROJECT_ID || '');
 
-  // Gerar refresh token
-  const refreshToken = `refresh_${Date.now()}`;
-  
-  // Retornar dados do usuário e tokens
-  return NextResponse.json({
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    },
-    token,
-    refreshToken
-  });
-} 
+const account = new Account(client);
+
+// Handler da rota de login
+async function loginHandler(request: Request, data: z.infer<typeof loginSchema>) {
+  try {
+    const { email, password } = data;
+    
+    // Tentar fazer login com Appwrite
+    const session = await account.createEmailPasswordSession(email, password);
+    
+    // Se chegou aqui, o login foi bem-sucedido
+    // Obter informações do usuário
+    const user = await account.get();
+    
+    // Registrar evento de login bem-sucedido
+    await LoggingService.info(
+      ActivityType.AUTH,
+      `Login bem-sucedido: ${email}`,
+      {
+        userId: user.$id,
+        ip: request.headers.get('x-forwarded-for') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined
+      }
+    );
+    
+    // Retornar resposta com cookie de sessão
+    const response = NextResponse.json({
+      success: true,
+      user: {
+        id: user.$id,
+        name: user.name,
+        email: user.email
+      }
+    });
+    
+    // Adicionar cookie de sessão (em produção, usar opções seguras)
+    response.cookies.set({
+      name: 'userId',
+      value: user.$id,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7 // 7 dias
+    });
+    
+    return response;
+  } catch (error: any) {
+    // Registrar tentativa de login falha
+    await LoggingService.warning(
+      ActivityType.AUTH,
+      `Falha no login: ${data.email}`,
+      {
+        ip: request.headers.get('x-forwarded-for') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+        metadata: {
+          error: error.message
+        }
+      }
+    );
+    
+    if (error.code === 401) {
+      return NextResponse.json(
+        { success: false, error: 'Credenciais inválidas' },
+        { status: 401 }
+      );
+    }
+    
+    return NextResponse.json(
+      { success: false, error: 'Erro ao fazer login' },
+      { status: 500 }
+    );
+  }
+}
+
+// Aplicar middlewares à rota de login
+export const POST = withRateLimit(
+  withValidation(loginSchema, loginHandler),
+  {
+    maxRequests: 5, // Limitar a 5 tentativas de login
+    windowMs: 60 * 1000, // Em um período de 1 minuto
+    type: 'ip',
+    endpoint: 'auth/login',
+    message: 'Muitas tentativas de login. Tente novamente em alguns minutos.'
+  }
+); 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +18,10 @@ import {
   ArrowUpDown
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { CustomerWithStats, listCustomers } from "@/lib/customerService";
+import { formatCurrency } from "@/lib/utils";
+import { useAuthStore } from '@/stores/authStore';
 
 // Tipos para dados dos clientes
 interface Cliente {
@@ -33,99 +37,15 @@ interface Cliente {
   status: string;
 }
 
-// Dados de exemplo para os clientes
-const clientesDados: Cliente[] = [
-  {
-    id: "1",
-    nome: "João Silva",
-    email: "joao.silva@email.com",
-    telefone: "(11) 98765-4321",
-    endereco: "Rua das Flores, 123 - São Paulo, SP",
-    dataCadastro: "15/03/2023",
-    totalPedidos: 12,
-    totalGasto: 745.90,
-    ultimoPedido: "22/04/2023",
-    status: "ativo",
-  },
-  {
-    id: "2",
-    nome: "Maria Oliveira",
-    email: "maria.oliveira@email.com",
-    telefone: "(11) 91234-5678",
-    endereco: "Avenida Paulista, 1000 - São Paulo, SP",
-    dataCadastro: "02/04/2023",
-    totalPedidos: 8,
-    totalGasto: 523.50,
-    ultimoPedido: "18/04/2023",
-    status: "ativo",
-  },
-  {
-    id: "3",
-    nome: "Pedro Santos",
-    email: "pedro.santos@email.com",
-    telefone: "(11) 99876-5432",
-    endereco: "Rua Augusta, 500 - São Paulo, SP",
-    dataCadastro: "10/01/2023",
-    totalPedidos: 15,
-    totalGasto: 982.30,
-    ultimoPedido: "25/04/2023",
-    status: "ativo",
-  },
-  {
-    id: "4",
-    nome: "Ana Souza",
-    email: "ana.souza@email.com",
-    telefone: "(11) 97654-3210",
-    endereco: "Rua Oscar Freire, 300 - São Paulo, SP",
-    dataCadastro: "05/02/2023",
-    totalPedidos: 6,
-    totalGasto: 310.75,
-    ultimoPedido: "10/04/2023",
-    status: "inativo",
-  },
-  {
-    id: "5",
-    nome: "Carlos Ferreira",
-    email: "carlos.ferreira@email.com",
-    telefone: "(11) 92345-6789",
-    endereco: "Alameda Santos, 800 - São Paulo, SP",
-    dataCadastro: "20/03/2023",
-    totalPedidos: 4,
-    totalGasto: 189.60,
-    ultimoPedido: "15/04/2023",
-    status: "ativo",
-  },
-  {
-    id: "6",
-    nome: "Juliana Costa",
-    email: "juliana.costa@email.com",
-    telefone: "(11) 95678-1234",
-    endereco: "Rua Haddock Lobo, 250 - São Paulo, SP",
-    dataCadastro: "08/02/2023",
-    totalPedidos: 10,
-    totalGasto: 650.20,
-    ultimoPedido: "20/04/2023",
-    status: "ativo",
-  },
-  {
-    id: "7",
-    nome: "Roberto Almeida",
-    email: "roberto.almeida@email.com",
-    telefone: "(11) 94321-8765",
-    endereco: "Avenida Rebouças, 600 - São Paulo, SP",
-    dataCadastro: "12/01/2023",
-    totalPedidos: 5,
-    totalGasto: 287.45,
-    ultimoPedido: "05/04/2023",
-    status: "inativo",
-  },
-];
-
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortField, setSortField] = useState("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [clientes, setClientes] = useState<CustomerWithStats[]>([]);
+  const [totalClientes, setTotalClientes] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const { establishment } = useAuthStore();
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -136,53 +56,66 @@ export default function CustomersPage() {
     }
   };
 
-  // Função para filtrar e ordenar clientes
-  const getFilteredClientes = () => {
-    let filtered = clientesDados;
-
-    // Aplicar busca
-    if (searchTerm) {
-      filtered = filtered.filter(cliente =>
-        cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cliente.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // Função para buscar clientes do backend
+  const fetchClientes = async () => {
+    if (!establishment?.id) return;
+    
+    try {
+      setIsLoading(true);
+      const result = await listCustomers(establishment.id, {
+        search: searchTerm,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        sortField: mapSortField(sortField),
+        sortDirection,
+      });
+      
+      setClientes(result.customers);
+      setTotalClientes(result.total);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+      toast.error('Não foi possível carregar a lista de clientes');
+    } finally {
+      setIsLoading(false);
     }
-
-    // Aplicar filtro de status
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(cliente => cliente.status === statusFilter);
-    }
-
-    // Aplicar ordenação
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "nome":
-          comparison = a.nome.localeCompare(b.nome);
-          break;
-        case "contato":
-          comparison = a.email.localeCompare(b.email);
-          break;
-        case "totalPedidos":
-          comparison = a.totalPedidos - b.totalPedidos;
-          break;
-        case "totalGasto":
-          comparison = a.totalGasto - b.totalGasto;
-          break;
-        case "ultimoPedido":
-          comparison = new Date(a.ultimoPedido.split('/').reverse().join('-')).getTime() - 
-                      new Date(b.ultimoPedido.split('/').reverse().join('-')).getTime();
-          break;
-        default:
-          break;
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
-
-    return filtered;
   };
 
-  const clientesFiltrados = getFilteredClientes();
+  // Mapeia os campos de ordenação do frontend para o backend
+  const mapSortField = (field: string): string => {
+    switch (field) {
+      case 'nome': return 'name';
+      case 'contato': return 'email';
+      case 'totalPedidos': return 'totalOrders';
+      case 'totalGasto': return 'totalSpent';
+      case 'ultimoPedido': return 'lastOrderDate';
+      default: return field;
+    }
+  };
+
+  // Formatar data no padrão brasileiro
+  const formatDate = (isoDate: string): string => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  // Efeito para buscar clientes sempre que os filtros ou ordenação mudar
+  useEffect(() => {
+    fetchClientes();
+  }, [establishment?.id, searchTerm, statusFilter, sortField, sortDirection]);
+
+  // Renderização dos dados para compatibilidade com o frontend existente
+  const clientesMapeados: Cliente[] = clientes.map(cliente => ({
+    id: cliente.id,
+    nome: cliente.name,
+    email: cliente.email,
+    telefone: cliente.phone,
+    endereco: cliente.address || '',
+    dataCadastro: formatDate(cliente.createdAt),
+    totalPedidos: cliente.totalOrders,
+    totalGasto: cliente.totalSpent,
+    ultimoPedido: formatDate(cliente.lastOrderDate),
+    status: cliente.status,
+  }));
 
   return (
     <div className="space-y-6 p-6 bg-[#fdfaf5]">
@@ -199,162 +132,172 @@ export default function CustomersPage() {
               <SelectTrigger className="w-[180px] bg-white">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all" className="bg-white hover:bg-[#fcf8f2]">Todos</SelectItem>
-                <SelectItem value="ativo" className="bg-white hover:bg-[#fcf8f2]">Ativos</SelectItem>
-                <SelectItem value="inativo" className="bg-white hover:bg-[#fcf8f2]">Inativos</SelectItem>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="ativo">Ativos</SelectItem>
+                <SelectItem value="inativo">Inativos</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              className="ml-auto"
+              onClick={() => {
+                // Implementar futuramente a exportação de dados
+                toast.info("Funcionalidade de exportação a ser implementada");
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
           </div>
-          <div className="bg-white rounded-lg border border-border/10 p-6 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold">Clientes</h1>
-                <p className="text-sm text-muted-foreground/100">
-                  Gerencie e visualize todos os clientes que já realizaram pedidos
-                </p>
-              </div>
-              <Button variant="outline" className="bg-background/100">
-                <Download className="mr-2 h-4 w-4" />
-                Exportar
-              </Button>
-            </div>
 
-            <div className="mt-6 rounded-md border bg-background/100">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-muted/100">
-                      <th className="px-4 py-3 text-left text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          className="flex items-center gap-1 -ml-3 bg-transparent hover:bg-muted/100"
-                          onClick={() => handleSort("nome")}
-                        >
-                          Nome
-                          <ArrowUpDown className="h-4 w-4" />
-                        </Button>
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          className="flex items-center gap-1 -ml-3 bg-transparent hover:bg-muted/100"
-                          onClick={() => handleSort("contato")}
-                        >
-                          Contato
-                          <ArrowUpDown className="h-4 w-4" />
-                        </Button>
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          className="flex items-center gap-1 justify-center w-full bg-transparent hover:bg-muted/100"
-                          onClick={() => handleSort("totalPedidos")}
-                        >
-                          Total Pedidos
-                          <ArrowUpDown className="h-4 w-4" />
-                        </Button>
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          className="flex items-center gap-1 justify-center w-full bg-transparent hover:bg-muted/100"
-                          onClick={() => handleSort("totalGasto")}
-                        >
-                          Total Gasto
-                          <ArrowUpDown className="h-4 w-4" />
-                        </Button>
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          className="flex items-center gap-1 justify-center w-full bg-transparent hover:bg-muted/100"
-                          onClick={() => handleSort("ultimoPedido")}
-                        >
-                          Último Pedido
-                          <ArrowUpDown className="h-4 w-4" />
-                        </Button>
-                      </th>
-                      <th className="px-4 py-3 text-right text-sm font-medium">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {clientesFiltrados.map((cliente) => (
-                      <tr key={cliente.id} className="border-b hover:bg-[#fcf8f2] transition-colors">
-                        <td className="px-4 py-3">
-                          <div>
-                            <div className="font-medium">{cliente.nome}</div>
-                            <div className="text-sm text-muted-foreground/100">
-                              Cliente desde {cliente.dataCadastro}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{cliente.email}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{cliente.telefone}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="inline-flex items-center justify-center rounded-full bg-orange-100/100 px-2.5 py-0.5 text-sm font-medium text-orange-700">
-                            {cliente.totalPedidos} pedidos
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          R$ {cliente.totalGasto.toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-center">{cliente.ultimoPedido}</td>
-                        <td className="px-4 py-3 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0 bg-background/100">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-white w-[160px]">
-                              <DropdownMenuItem className="cursor-pointer hover:bg-[#fcf8f2]">
-                                <Link href={`/admin/customers/${cliente.id}`} className="w-full">
-                                  Ver detalhes
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer hover:bg-[#fcf8f2]">
-                                <Link href={`/admin/customers/${cliente.id}/orders`} className="w-full">
-                                  Ver pedidos
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600 cursor-pointer hover:bg-[#fcf8f2]">
-                                Desativar cliente
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/100">
-                <p className="text-sm text-muted-foreground/100">
-                  Mostrando {clientesFiltrados.length} de {clientesDados.length} clientes
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="bg-background/100">
-                    Anterior
-                  </Button>
-                  <Button variant="outline" size="sm" className="bg-background/100">
-                    Próximo
-                  </Button>
-                </div>
-              </div>
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-semibold">Clientes</h1>
+              <p className="text-sm text-gray-500">
+                Gerencie e visualize todos os clientes que já realizaram pedidos
+              </p>
             </div>
           </div>
+
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          ) : clientesMapeados.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <h2 className="text-xl font-semibold mb-2">Nenhum cliente encontrado</h2>
+              <p className="text-muted-foreground max-w-md">
+                {searchTerm || statusFilter !== "all" 
+                  ? "Tente ajustar os filtros para encontrar o que está procurando." 
+                  : "Você ainda não possui clientes cadastrados. Eles aparecerão aqui quando fizerem pedidos."}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="py-3 text-left font-medium text-sm">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort("nome")}
+                      >
+                        Cliente
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortField === "nome" ? "text-primary" : "text-gray-400"}`} />
+                      </button>
+                    </th>
+                    <th className="py-3 text-left font-medium text-sm">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort("contato")}
+                      >
+                        Contato
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortField === "contato" ? "text-primary" : "text-gray-400"}`} />
+                      </button>
+                    </th>
+                    <th className="py-3 text-left font-medium text-sm">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort("totalPedidos")}
+                      >
+                        Pedidos
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortField === "totalPedidos" ? "text-primary" : "text-gray-400"}`} />
+                      </button>
+                    </th>
+                    <th className="py-3 text-left font-medium text-sm">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort("totalGasto")}
+                      >
+                        Total Gasto
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortField === "totalGasto" ? "text-primary" : "text-gray-400"}`} />
+                      </button>
+                    </th>
+                    <th className="py-3 text-left font-medium text-sm">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort("ultimoPedido")}
+                      >
+                        Último Pedido
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortField === "ultimoPedido" ? "text-primary" : "text-gray-400"}`} />
+                      </button>
+                    </th>
+                    <th className="py-3 text-left font-medium text-sm">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort("status")}
+                      >
+                        Status
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortField === "status" ? "text-primary" : "text-gray-400"}`} />
+                      </button>
+                    </th>
+                    <th className="py-3 text-right font-medium text-sm">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientesMapeados.map((cliente) => (
+                    <tr key={cliente.id} className="border-b hover:bg-gray-50">
+                      <td className="py-4">
+                        <div className="font-medium">{cliente.nome}</div>
+                      </td>
+                      <td className="py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <Mail className="h-3 w-3" />
+                            {cliente.email}
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <Phone className="h-3 w-3" />
+                            {cliente.telefone}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4">{cliente.totalPedidos}</td>
+                      <td className="py-4">{formatCurrency(cliente.totalGasto)}</td>
+                      <td className="py-4">{cliente.ultimoPedido || "-"}</td>
+                      <td className="py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          cliente.status === "ativo" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                        }`}>
+                          {cliente.status === "ativo" ? "Ativo" : "Inativo"}
+                        </span>
+                      </td>
+                      <td className="py-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Link href={`/admin/customers/${cliente.id}`} className="w-full">
+                                Ver detalhes
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Link href={`/admin/customers/${cliente.id}/orders`} className="w-full">
+                                Ver pedidos
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade a ser implementada")}>
+                              Enviar mensagem
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="py-4 text-sm text-gray-500 text-right">
+                Mostrando {clientesMapeados.length} de {totalClientes} clientes
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

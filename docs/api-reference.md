@@ -703,6 +703,600 @@ X-Signature: assinatura-para-verificação
 }
 ```
 
+### Estabelecimento (Establishment)
+
+#### Buscar Estabelecimento por Slug
+
+```
+GET /api/establishment/:slug
+```
+
+Retorna os dados do estabelecimento correspondente ao slug fornecido.
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                                      |
+|-----------|--------|------------------------------------------------|
+| slug      | string | Slug único do estabelecimento (identificador amigável para URL) |
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "abc123",
+    "name": "Restaurante Exemplo",
+    "slug": "restaurante-exemplo",
+    "description": "Um ótimo restaurante para todas as ocasiões",
+    "logoUrl": "https://storage.example.com/logos/abc123.jpg",
+    "coverImageUrl": "https://storage.example.com/covers/abc123.jpg",
+    "type": "restaurant",
+    "address": {
+      "street": "Rua Exemplo",
+      "number": "123",
+      "neighborhood": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipCode": "01001-000"
+    },
+    "businessHours": [
+      {
+        "dayOfWeek": 0,
+        "openTime": "12:00",
+        "closeTime": "22:00",
+        "isOpen": true
+      },
+      {
+        "dayOfWeek": 1,
+        "openTime": "11:00",
+        "closeTime": "23:00",
+        "isOpen": true
+      },
+      // ... outros dias da semana
+    ],
+    "deliverySettings": {
+      "hasDelivery": true,
+      "minimumOrderValue": 20,
+      "deliveryFee": 5,
+      "estimatedDeliveryTime": 45,
+      "deliveryZones": []
+    },
+    "paymentMethods": ["credit_card", "debit_card", "cash", "pix"],
+    "phoneNumber": "(11) 99999-9999",
+    "whatsappNumber": "(11) 99999-9999",
+    "isOpen": true,
+    "ownerId": "user123",
+    "createdAt": "2023-07-15T14:30:00Z",
+    "updatedAt": "2023-07-15T14:30:00Z"
+  }
+}
+```
+
+**Resposta (404 Not Found):**
+
+```json
+{
+  "error": "Estabelecimento não encontrado"
+}
+```
+
+#### Buscar Estabelecimento por ID
+
+```
+GET /api/establishment/:id
+```
+
+Retorna os dados do estabelecimento correspondente ao ID único fornecido.
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Resposta (200 OK):**
+
+Mesmo formato da resposta da busca por slug.
+
+**Resposta (404 Not Found):**
+
+```json
+{
+  "error": "Estabelecimento não encontrado"
+}
+```
+
+#### Criar Estabelecimento
+
+```
+POST /api/establishment
+```
+
+Cria um novo estabelecimento no sistema.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Body:**
+
+```json
+{
+  "name": "Novo Restaurante",
+  "slug": "novo-restaurante",
+  "description": "Descrição do novo restaurante",
+  "type": "restaurant",
+  "ownerId": "user456",
+  "address": {
+    "street": "Rua Nova",
+    "number": "456",
+    "neighborhood": "Jardins",
+    "city": "São Paulo",
+    "state": "SP",
+    "zipCode": "01453-000"
+  },
+  "businessHours": [
+    {
+      "dayOfWeek": 1,
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "isOpen": true
+    },
+    // ... outros dias da semana
+  ],
+  "paymentMethods": ["credit_card", "pix"],
+  "phoneNumber": "(11) 88888-8888",
+  "whatsappNumber": "(11) 88888-8888",
+  "isOpen": true
+}
+```
+
+**Resposta (201 Created):**
+
+```json
+{
+  "establishment": {
+    "id": "def456",
+    "name": "Novo Restaurante",
+    "slug": "novo-restaurante",
+    // ... outros campos com os valores fornecidos
+    "createdAt": "2023-08-10T09:15:00Z",
+    "updatedAt": "2023-08-10T09:15:00Z"
+  }
+}
+```
+
+**Resposta (400 Bad Request):**
+
+```json
+{
+  "error": "Dados obrigatórios não fornecidos (nome, slug, ownerId)"
+}
+```
+
+**Resposta (409 Conflict):**
+
+```json
+{
+  "error": "Já existe um estabelecimento com este slug"
+}
+```
+
+#### Atualizar Dados do Estabelecimento
+
+```
+PATCH /api/establishment/:id/update
+```
+
+Atualiza as informações gerais do estabelecimento.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Body:**
+
+```json
+{
+  "name": "Nome Atualizado",
+  "description": "Descrição atualizada",
+  "type": "restaurant",
+  "phoneNumber": "(11) 98765-4321",
+  "whatsappNumber": "(11) 98765-4321",
+  "paymentMethods": ["credit_card", "pix", "cash"]
+}
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "123abc",
+    "name": "Nome Atualizado",
+    "description": "Descrição atualizada",
+    "type": "restaurant",
+    "phoneNumber": "(11) 98765-4321",
+    "whatsappNumber": "(11) 98765-4321",
+    "paymentMethods": ["credit_card", "pix", "cash"],
+    // ... outros campos do estabelecimento
+    "updatedAt": "2023-08-10T15:30:00Z"
+  }
+}
+```
+
+**Resposta (404 Not Found):**
+
+```json
+{
+  "error": "Estabelecimento não encontrado"
+}
+```
+
+#### Atualizar Endereço do Estabelecimento
+
+```
+PATCH /api/establishment/:id/address
+```
+
+Atualiza o endereço do estabelecimento.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Body:**
+
+```json
+{
+  "street": "Rua Nova",
+  "number": "123",
+  "complement": "Sala 45",
+  "neighborhood": "Centro",
+  "city": "São Paulo",
+  "state": "SP",
+  "zipCode": "01234-567",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "123abc",
+    "address": {
+      "street": "Rua Nova",
+      "number": "123",
+      "complement": "Sala 45",
+      "neighborhood": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipCode": "01234-567",
+      "latitude": -23.5505,
+      "longitude": -46.6333
+    },
+    // ... outros campos do estabelecimento
+    "updatedAt": "2023-08-10T15:40:00Z"
+  }
+}
+```
+
+**Resposta (400 Bad Request):**
+
+```json
+{
+  "error": "Campo obrigatório não fornecido: street"
+}
+```
+
+#### Atualizar Horários de Funcionamento
+
+```
+PATCH /api/establishment/:id/business-hours
+```
+
+Atualiza os horários de funcionamento do estabelecimento.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Body:**
+
+```json
+[
+  {
+    "dayOfWeek": 0,
+    "isOpen": true,
+    "openTime": "08:00",
+    "closeTime": "18:00"
+  },
+  {
+    "dayOfWeek": 1,
+    "isOpen": true,
+    "openTime": "08:00",
+    "closeTime": "18:00"
+  },
+  {
+    "dayOfWeek": 6,
+    "isOpen": false
+  }
+]
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "123abc",
+    "businessHours": [
+      {
+        "dayOfWeek": 0,
+        "isOpen": true,
+        "openTime": "08:00",
+        "closeTime": "18:00"
+      },
+      {
+        "dayOfWeek": 1,
+        "isOpen": true,
+        "openTime": "08:00",
+        "closeTime": "18:00"
+      },
+      {
+        "dayOfWeek": 6,
+        "isOpen": false
+      }
+    ],
+    // ... outros campos do estabelecimento
+    "updatedAt": "2023-08-10T15:50:00Z"
+  }
+}
+```
+
+**Resposta (400 Bad Request):**
+
+```json
+{
+  "error": "Para dias com isOpen=true, openTime e closeTime são obrigatórios"
+}
+```
+
+#### Atualizar Configurações de Entrega
+
+```
+PATCH /api/establishment/:id/delivery-settings
+```
+
+Atualiza as configurações de entrega do estabelecimento.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Body:**
+
+```json
+{
+  "hasDelivery": true,
+  "minimumOrderValue": 20,
+  "deliveryFee": 5,
+  "estimatedDeliveryTime": 45,
+  "deliveryZones": [
+    {
+      "name": "Zona 1 (até 2km)",
+      "fee": 5,
+      "estimatedTime": 30
+    },
+    {
+      "name": "Zona 2 (2-5km)",
+      "fee": 8,
+      "estimatedTime": 45
+    }
+  ]
+}
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "123abc",
+    "deliverySettings": {
+      "hasDelivery": true,
+      "minimumOrderValue": 20,
+      "deliveryFee": 5,
+      "estimatedDeliveryTime": 45,
+      "deliveryZones": [
+        {
+          "name": "Zona 1 (até 2km)",
+          "fee": 5,
+          "estimatedTime": 30
+        },
+        {
+          "name": "Zona 2 (2-5km)",
+          "fee": 8,
+          "estimatedTime": 45
+        }
+      ]
+    },
+    // ... outros campos do estabelecimento
+    "updatedAt": "2023-08-10T16:00:00Z"
+  }
+}
+```
+
+**Resposta (400 Bad Request):**
+
+```json
+{
+  "error": "O campo 'hasDelivery' é obrigatório"
+}
+```
+
+#### Atualizar Métodos de Pagamento
+
+```
+PATCH /api/establishment/:id/payment-methods
+```
+
+Atualiza os métodos de pagamento aceitos pelo estabelecimento.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Body:**
+
+```json
+[
+  "credit_card",
+  "debit_card",
+  "cash",
+  "pix"
+]
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "123abc",
+    "paymentMethods": [
+      "credit_card",
+      "debit_card",
+      "cash",
+      "pix"
+    ],
+    // ... outros campos do estabelecimento
+    "updatedAt": "2023-08-10T16:10:00Z"
+  }
+}
+```
+
+**Resposta (400 Bad Request):**
+
+```json
+{
+  "error": "Método de pagamento inválido: cheque. Métodos válidos: credit_card, debit_card, cash, pix, bank_transfer, meal_voucher, food_voucher"
+}
+```
+
+#### Configurar Integração com WhatsApp
+
+```
+PATCH /api/establishment/:id/whatsapp
+```
+
+Configura a integração com WhatsApp para notificações.
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Parâmetros de URL:**
+
+| Parâmetro | Tipo   | Descrição                               |
+|-----------|--------|------------------------------------------|
+| id        | string | ID único do estabelecimento no banco de dados |
+
+**Body:**
+
+```json
+{
+  "whatsappNumber": "+5511987654321",
+  "notifyNewOrders": true,
+  "notifyStatusChanges": true,
+  "customMessages": {
+    "newOrder": "Olá! Você recebeu um novo pedido #{{orderId}}",
+    "orderConfirmed": "O pedido #{{orderId}} foi confirmado",
+    "orderReady": "O pedido #{{orderId}} está pronto para retirada/entrega",
+    "orderDelivered": "O pedido #{{orderId}} foi entregue"
+  }
+}
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "establishment": {
+    "id": "123abc",
+    "whatsappNumber": "+5511987654321",
+    "whatsappConfig": {
+      "whatsappNumber": "+5511987654321",
+      "notifyNewOrders": true,
+      "notifyStatusChanges": true,
+      "customMessages": {
+        "newOrder": "Olá! Você recebeu um novo pedido #{{orderId}}",
+        "orderConfirmed": "O pedido #{{orderId}} foi confirmado",
+        "orderReady": "O pedido #{{orderId}} está pronto para retirada/entrega",
+        "orderDelivered": "O pedido #{{orderId}} foi entregue"
+      }
+    },
+    // ... outros campos do estabelecimento
+    "updatedAt": "2023-08-10T16:20:00Z"
+  }
+}
+```
+
+**Resposta (400 Bad Request):**
+
+```json
+{
+  "error": "Número de WhatsApp não fornecido"
+}
+```
+
 ## Códigos de Erro
 
 | Código               | Descrição                                     |
@@ -763,3 +1357,330 @@ Para questões técnicas ou dúvidas sobre a API, entre em contato:
 
 - Email: suporte@cardapio-krato.com
 - Documentação completa: https://docs.cardapio-krato.com/api 
+
+## API de Planos de Assinatura {#api-planos-assinatura}
+
+A API de planos de assinatura permite gerenciar diferentes níveis de acesso e recursos para os estabelecimentos.
+
+### Listar Planos Disponíveis
+
+```
+GET /api/subscription/plans
+```
+
+**Descrição**: Retorna todos os planos de assinatura ativos disponíveis.
+
+**Autenticação**: Não requer autenticação
+
+**Parâmetros**: Nenhum
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "plans": [
+    {
+      "id": "basic_plan",
+      "name": "Básico",
+      "description": "Ideal para pequenos estabelecimentos que estão começando.",
+      "priceMonthly": 49.9,
+      "priceYearly": 479.9,
+      "features": [
+        "Cardápio digital personalizado",
+        "Gerenciamento de pedidos",
+        "Até 50 produtos cadastrados",
+        "Relatórios básicos",
+        "Suporte por e-mail"
+      ],
+      "order": 1,
+      "isActive": true,
+      "isFeatured": false
+    },
+    // Outros planos...
+  ]
+}
+```
+
+**Resposta de Erro (500 Internal Server Error)**:
+
+```json
+{
+  "error": "Erro ao listar planos de assinatura"
+}
+```
+
+### Obter Detalhes de um Plano
+
+```
+GET /api/subscription/plans/:id
+```
+
+**Descrição**: Retorna detalhes de um plano específico.
+
+**Autenticação**: Não requer autenticação
+
+**Parâmetros de URL**:
+- `id`: ID do plano (ex: basic_plan, professional_plan, premium_plan)
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "plan": {
+    "id": "professional_plan",
+    "name": "Profissional",
+    "description": "Perfeito para restaurantes em crescimento que precisam de mais recursos.",
+    "priceMonthly": 89.9,
+    "priceYearly": 863.9,
+    "features": [
+      "Todos os recursos do plano Básico",
+      "Até 150 produtos cadastrados",
+      "Gestão de múltiplos estabelecimentos",
+      "Sistema de delivery integrado",
+      "Relatórios avançados",
+      "Suporte prioritário",
+      "Integração com sistemas de pagamento"
+    ],
+    "order": 2,
+    "isActive": true,
+    "isFeatured": true
+  }
+}
+```
+
+**Resposta de Erro (404 Not Found)**:
+
+```json
+{
+  "error": "Plano não encontrado"
+}
+```
+
+### Obter Assinatura de Estabelecimento
+
+```
+GET /api/establishment/:identifier/subscription
+```
+
+**Descrição**: Retorna a assinatura atual de um estabelecimento.
+
+**Autenticação**: Requer autenticação do estabelecimento
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "subscription": {
+    "id": "sub_123456",
+    "establishmentId": "est_123456",
+    "planId": "professional_plan",
+    "startDate": "2024-07-01T12:00:00.000Z",
+    "endDate": "2024-08-01T12:00:00.000Z",
+    "status": "active",
+    "billingCycle": "monthly",
+    "plan": {
+      "id": "professional_plan",
+      "name": "Profissional",
+      "description": "Perfeito para restaurantes em crescimento que precisam de mais recursos.",
+      "priceMonthly": 89.9,
+      "priceYearly": 863.9,
+      "features": [
+        "Todos os recursos do plano Básico",
+        "Até 150 produtos cadastrados",
+        "Gestão de múltiplos estabelecimentos",
+        "Sistema de delivery integrado",
+        "Relatórios avançados",
+        "Suporte prioritário",
+        "Integração com sistemas de pagamento"
+      ],
+      "order": 2,
+      "isActive": true,
+      "isFeatured": true
+    }
+  }
+}
+```
+
+**Resposta de Erro (404 Not Found)**:
+
+```json
+{
+  "message": "Nenhuma assinatura encontrada para este estabelecimento"
+}
+```
+
+### Atualizar Assinatura
+
+```
+POST /api/establishment/:identifier/subscription/update
+```
+
+**Descrição**: Cria ou atualiza a assinatura de um estabelecimento.
+
+**Autenticação**: Requer autenticação do estabelecimento
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Corpo da Requisição**:
+
+```json
+{
+  "planId": "professional_plan",
+  "billingCycle": "monthly"
+}
+```
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "subscription": {
+    "id": "sub_123456",
+    "establishmentId": "est_123456",
+    "planId": "professional_plan",
+    "startDate": "2024-07-01T12:00:00.000Z",
+    "endDate": "2024-08-01T12:00:00.000Z",
+    "status": "active",
+    "billingCycle": "monthly",
+    "plan": {
+      "id": "professional_plan",
+      "name": "Profissional",
+      "description": "Perfeito para restaurantes em crescimento que precisam de mais recursos.",
+      "priceMonthly": 89.9,
+      "priceYearly": 863.9,
+      "features": [
+        "Todos os recursos do plano Básico",
+        "Até 150 produtos cadastrados",
+        "Gestão de múltiplos estabelecimentos",
+        "Sistema de delivery integrado",
+        "Relatórios avançados",
+        "Suporte prioritário",
+        "Integração com sistemas de pagamento"
+      ],
+      "order": 2,
+      "isActive": true,
+      "isFeatured": true
+    }
+  }
+}
+```
+
+**Resposta de Erro (400 Bad Request)**:
+
+```json
+{
+  "error": "ID do plano e ciclo de faturamento são obrigatórios"
+}
+```
+
+### Cancelar Assinatura
+
+```
+POST /api/establishment/:identifier/subscription/cancel
+```
+
+**Descrição**: Cancela a assinatura atual de um estabelecimento.
+
+**Autenticação**: Requer autenticação do estabelecimento
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "message": "Assinatura cancelada com sucesso",
+  "subscription": {
+    "id": "sub_123456",
+    "establishmentId": "est_123456",
+    "planId": "professional_plan",
+    "startDate": "2024-07-01T12:00:00.000Z",
+    "endDate": "2024-08-01T12:00:00.000Z",
+    "status": "canceled",
+    "billingCycle": "monthly"
+  }
+}
+```
+
+**Resposta de Erro (404 Not Found)**:
+
+```json
+{
+  "message": "Nenhuma assinatura encontrada para este estabelecimento"
+}
+```
+
+### Verificar Acesso a Recursos
+
+```
+POST /api/establishment/:identifier/check-feature
+```
+
+**Descrição**: Verifica se um estabelecimento tem acesso a um recurso específico baseado em seu plano.
+
+**Autenticação**: Requer autenticação do estabelecimento
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Corpo da Requisição**:
+
+```json
+{
+  "featureName": "Relatórios avançados"
+}
+```
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "hasAccess": true,
+  "feature": "Relatórios avançados"
+}
+```
+
+**Resposta de Erro (400 Bad Request)**:
+
+```json
+{
+  "error": "Nome do recurso não fornecido"
+}
+```
+
+### Verificar Limites de Produtos
+
+```
+GET /api/establishment/:identifier/product-limit
+```
+
+**Descrição**: Verifica o limite de produtos disponíveis para um estabelecimento baseado em seu plano.
+
+**Autenticação**: Requer autenticação do estabelecimento
+
+**Parâmetros de URL**:
+- `identifier`: ID do estabelecimento
+
+**Resposta de Sucesso (200 OK)**:
+
+```json
+{
+  "maxProducts": 150,
+  "currentProductCount": 45,
+  "remainingProducts": 105,
+  "canAddMore": true
+}
+```
+
+**Resposta de Erro (500 Internal Server Error)**:
+
+```json
+{
+  "error": "Erro ao verificar limite de produtos"
+}
+``` 

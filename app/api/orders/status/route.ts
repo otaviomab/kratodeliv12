@@ -1,59 +1,60 @@
 import { NextResponse } from 'next/server';
+import { OrderService, OrderStatus } from '@/lib/orderService';
 
-// Enum para status do pedido
-enum OrderStatus {
-  PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  PREPARING = "PREPARING",
-  READY = "READY",
-  DELIVERED = "DELIVERED",
-  CANCELED = "CANCELED"
-}
-
-// Mock orders para simulação (em um ambiente real, isso estaria em um banco de dados)
-// Esta é apenas uma simulação, então usando um objeto para facilitar a busca por ID
-const mockOrders: Record<string, { id: string; status: OrderStatus; updatedAt: string }> = {
-  "ord-123456789": {
-    id: "ord-123456789",
-    status: OrderStatus.PENDING,
-    updatedAt: new Date().toISOString()
-  }
-};
-
+// Manipulador para atualizar status de pedido
 export async function PUT(request: Request) {
-  const data = await request.json();
-  
-  // Validar dados recebidos
-  if (!data.orderId || !data.status) {
+  try {
+    const data = await request.json();
+    
+    // Validar dados recebidos
+    if (!data.orderId || !data.status) {
+      return NextResponse.json(
+        { error: "Dados incompletos" },
+        { status: 400 }
+      );
+    }
+    
+    // Verificar se o status é válido
+    if (!Object.values(OrderStatus).includes(data.status)) {
+      return NextResponse.json(
+        { error: "Status inválido" },
+        { status: 400 }
+      );
+    }
+    
+    // Atualizar status usando o serviço
+    const updatedOrder = await OrderService.updateOrderStatus(
+      data.orderId, 
+      data.status, 
+      data.note
+    );
+    
+    return NextResponse.json({
+      order: updatedOrder,
+      message: `Status do pedido atualizado para ${data.status}`
+    });
+  } catch (error: any) {
+    console.error("Erro ao atualizar status do pedido:", error);
+    
+    // Verifica se é erro 404 (pedido não encontrado)
+    if (error.message && error.message.includes('not found')) {
+      return NextResponse.json(
+        { error: "Pedido não encontrado" },
+        { status: 404 }
+      );
+    }
+    
+    // Tratar erros específicos de transição de status
+    if (error.message && error.message.includes('Transição de status inválida')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: "Dados incompletos" },
-      { status: 400 }
+      { error: error.message || "Erro ao atualizar status do pedido" },
+      { status: 500 }
     );
   }
-  
-  // Verificar se o status é válido
-  if (!Object.values(OrderStatus).includes(data.status)) {
-    return NextResponse.json(
-      { error: "Status inválido" },
-      { status: 400 }
-    );
-  }
-  
-  // Verificar se o pedido existe
-  if (!mockOrders[data.orderId]) {
-    return NextResponse.json(
-      { error: "Pedido não encontrado" },
-      { status: 404 }
-    );
-  }
-  
-  // Atualizar o status
-  mockOrders[data.orderId].status = data.status;
-  mockOrders[data.orderId].updatedAt = new Date().toISOString();
-  
-  return NextResponse.json({
-    id: data.orderId,
-    status: data.status,
-    updatedAt: mockOrders[data.orderId].updatedAt
-  });
 } 
